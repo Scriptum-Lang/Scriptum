@@ -1,0 +1,11 @@
+[package]
+name = "scriptum-lexer"
+version = "0.1.0"
+edition = "2021"
+build = "src/tokens/build.rs"
+
+[dependencies]
+
+[features]
+default = []
+debug = []
