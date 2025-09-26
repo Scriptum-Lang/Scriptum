@@ -1,0 +1,5 @@
+def init() {
+  def x = 10;
+  x = verum;
+  reditus x;
+}

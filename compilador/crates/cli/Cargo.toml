@@ -1,0 +1,18 @@
+[package]
+name = "scriptum-cli"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+clap.workspace = true
+miette.workspace = true
+ariadne.workspace = true
+scriptum-utils = { path = "../utils" }
+scriptum-lexer = { path = "../lexer" }
+scriptum-parser-ll = { path = "../parser" }
+scriptum-sema = { path = "../semantic" }
+scriptum-codegen = { path = "../codegen" }
+scriptum-runtime = { path = "../runtime" }
+rayon.workspace = true

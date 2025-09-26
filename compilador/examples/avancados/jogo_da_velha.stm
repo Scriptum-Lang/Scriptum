@@ -1,0 +1,8 @@
+def init() {
+  def vencedor = falsum;
+  si vencedor {
+    reditus 1;
+  } alioqui {
+    reditus 0;
+  }
+}

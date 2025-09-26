@@ -1,0 +1,8 @@
+def soma(a, b) {
+  reditus a + b;
+}
+
+def init() {
+  def resultado = soma(2, 3);
+  reditus resultado;
+}

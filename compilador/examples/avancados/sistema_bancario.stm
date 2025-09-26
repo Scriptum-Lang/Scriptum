@@ -1,0 +1,9 @@
+def depositum(saldo, valor) {
+  reditus saldo + valor;
+}
+
+def init() {
+  def saldo = 100;
+  saldo = depositum(saldo, 50);
+  reditus saldo - 20;
+}

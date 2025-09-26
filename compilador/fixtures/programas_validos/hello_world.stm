@@ -1,0 +1,4 @@
+def init() {
+  def mensagem = 1;
+  reditus mensagem;
+}

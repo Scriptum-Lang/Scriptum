@@ -1,0 +1,7 @@
+def quadratum(x) {
+  reditus x * x;
+}
+
+def init() {
+  reditus quadratum(5);
+}

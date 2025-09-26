@@ -1,0 +1,7 @@
+def init() {
+  si verum {
+    reditus 1;
+  } alioqui {
+    reditus 0;
+  }
+}

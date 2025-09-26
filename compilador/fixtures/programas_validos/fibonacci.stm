@@ -1,0 +1,11 @@
+def fib(n) {
+  si n <= 1 {
+    reditus n;
+  } alioqui {
+    reditus fib(n - 1) + fib(n - 2);
+  }
+}
+
+def init() {
+  reditus fib(4);
+}
