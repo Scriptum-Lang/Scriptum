@@ -3,7 +3,7 @@ use crate::tokens::{KeywordKind, TokenKind};
 /// Retorna o token de palavra-chave associado ao lexema.
 pub fn lookup_keyword(ident: &str) -> Option<TokenKind> {
     let keyword = match ident {
-        "def" => KeywordKind::Def,
+        "definire" => KeywordKind::Definire,
         "finis" => KeywordKind::Finis,
         "si" => KeywordKind::Si,
         "alioqui" => KeywordKind::Alioqui,

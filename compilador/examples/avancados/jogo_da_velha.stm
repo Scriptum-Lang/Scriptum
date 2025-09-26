@@ -1,5 +1,5 @@
-def init() {
-  def vencedor = falsum;
+﻿definire init() {
+  definire vencedor = falsum;
   si vencedor {
     reditus 1;
   } alioqui {

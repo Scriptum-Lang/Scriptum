@@ -1,4 +1,4 @@
-def fib(n) {
+﻿definire fib(n) {
   si n <= 1 {
     reditus n;
   } alioqui {
@@ -6,6 +6,6 @@ def fib(n) {
   }
 }
 
-def init() {
+definire init() {
   reditus fib(4);
 }

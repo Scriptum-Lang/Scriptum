@@ -1,4 +1,4 @@
-[package]
+﻿[package]
 name = "scriptum-codegen"
 version = "0.1.0"
 edition.workspace = true
@@ -8,5 +8,6 @@ authors.workspace = true
 [dependencies]
 scriptum-ast = { path = "../ast" }
 scriptum-utils = { path = "../utils" }
+indexmap.workspace = true
 smallvec.workspace = true
 serde.workspace = true

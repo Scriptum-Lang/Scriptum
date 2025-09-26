@@ -17,7 +17,7 @@ pub struct ExecutionResult {
 
 /// Máquina virtual interpretativa simples.
 pub struct VirtualMachine<'a> {
-    chunk: &'a Chunk,
+    _chunk: &'a Chunk,
     index: HashMap<u32, &'a FunctionChunk>,
 }
 
@@ -27,7 +27,10 @@ impl<'a> VirtualMachine<'a> {
         for function in &chunk.functions {
             index.insert(function.name, function);
         }
-        Self { chunk, index }
+        Self {
+            _chunk: chunk,
+            index,
+        }
     }
 
     pub fn run(&self, entry: u32, args: &[f64]) -> Result<ExecutionResult, VmError> {
@@ -55,10 +58,10 @@ impl<'a> VirtualMachine<'a> {
                     frame.locals[idx as usize] = value;
                     frame.ip += 1;
                 }
-                Instruction::Add => binary_op(&mut stack, f64::add, frame),
-                Instruction::Sub => binary_op(&mut stack, f64::sub, frame),
-                Instruction::Mul => binary_op(&mut stack, f64::mul, frame),
-                Instruction::Div => binary_op(&mut stack, f64::div, frame),
+                Instruction::Add => binary_op(&mut stack, |a, b| a + b, frame),
+                Instruction::Sub => binary_op(&mut stack, |a, b| a - b, frame),
+                Instruction::Mul => binary_op(&mut stack, |a, b| a * b, frame),
+                Instruction::Div => binary_op(&mut stack, |a, b| a / b, frame),
                 Instruction::CmpEq => compare(&mut stack, |a, b| a == b, frame),
                 Instruction::CmpNe => compare(&mut stack, |a, b| a != b, frame),
                 Instruction::CmpLt => compare(&mut stack, |a, b| a < b, frame),

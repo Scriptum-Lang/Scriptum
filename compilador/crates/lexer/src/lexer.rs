@@ -1,7 +1,7 @@
 use crate::dfa::{identifier_end, number_end, skip_ignorable};
 use crate::keywords::lookup_keyword;
 use crate::operators::match_operator;
-use crate::tokens::{KeywordKind, OperatorKind, Token, TokenKind};
+use crate::tokens::{KeywordKind, Token, TokenKind};
 use scriptum_utils::Span;
 use thiserror::Error;
 

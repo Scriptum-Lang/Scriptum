@@ -1,7 +1,7 @@
-def quadratum(x) {
+﻿definire quadratum(x) {
   reditus x * x;
 }
 
-def init() {
+definire init() {
   reditus quadratum(5);
 }

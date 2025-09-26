@@ -1,5 +1,5 @@
-def init() {
-  def saldo = 100;
+﻿definire init() {
+  definire saldo = 100;
   dum saldo > 0 {
     saldo = saldo - 10;
   }

@@ -24,7 +24,6 @@ pub enum ErrorKind {
 #[error("{message}")]
 pub struct Error {
     #[source]
-    #[diagnostic_source]
     source: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
     #[diagnostic_source]
     kind: ErrorKind,

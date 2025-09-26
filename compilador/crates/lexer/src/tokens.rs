@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use smallvec::SmallVec;
 
 use scriptum_utils::Span;
 
@@ -23,7 +22,7 @@ pub enum TokenKind {
 /// Palavras-chave reconhecidas.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KeywordKind {
-    Def,
+    Definire,
     Finis,
     Si,
     Alioqui,

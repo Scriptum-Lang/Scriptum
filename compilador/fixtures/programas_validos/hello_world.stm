@@ -1,4 +1,4 @@
-def init() {
-  def mensagem = 1;
+﻿definire init() {
+  definire mensagem = 1;
   reditus mensagem;
 }

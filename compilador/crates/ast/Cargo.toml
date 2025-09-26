@@ -1,4 +1,4 @@
-[package]
+﻿[package]
 name = "scriptum-ast"
 version = "0.1.0"
 edition.workspace = true
@@ -7,5 +7,6 @@ authors.workspace = true
 
 [dependencies]
 scriptum-utils = { path = "../utils" }
+indexmap.workspace = true
 smallvec.workspace = true
 serde.workspace = true

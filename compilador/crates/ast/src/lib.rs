@@ -3,7 +3,8 @@
 
 //! Estruturas da AST da linguagem Scriptum.
 
-use bumpalo::Bump;
+use std::sync::Arc;
+
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
@@ -23,14 +24,12 @@ impl Symbol {
 /// Interner compacto para strings.
 #[derive(Default, Clone)]
 pub struct StringInterner {
-    arena: Bump,
-    map: IndexSet<&'static str>,
+    map: IndexSet<Arc<str>>,
 }
 
 impl StringInterner {
     pub fn new() -> Self {
         Self {
-            arena: Bump::new(),
             map: IndexSet::new(),
         }
     }
@@ -39,15 +38,15 @@ impl StringInterner {
         if let Some(idx) = self.map.get_index_of(text) {
             return Symbol(idx as u32);
         }
-        let stored: &mut str = self.arena.alloc_str(text);
-        let leaked: &'static str = unsafe { &*(stored as *const str) };
-        let (idx, _) = self.map.insert_full(leaked);
+        let stored: Arc<str> = Arc::from(text);
+        let (idx, _) = self.map.insert_full(stored);
         Symbol(idx as u32)
     }
 
     pub fn resolve(&self, sym: Symbol) -> &str {
         self.map
             .get_index(sym.0 as usize)
+            .map(|symbol| symbol.as_ref())
             .expect("símbolo inválido")
     }
 }

@@ -1,24 +1,24 @@
-# Especificação da Linguagem Scriptum (.stm)
+﻿# EspecificaÃ§Ã£o da Linguagem Scriptum (.stm)
 
-A linguagem Scriptum é imperativa com tipagem estática leve e sintaxe inspirada
+A linguagem Scriptum Ã© imperativa com tipagem estÃ¡tica leve e sintaxe inspirada
 em linguagens latinas.
 
-## Léxico
+## LÃ©xico
 
 * Identificadores: `[A-Za-z_][A-Za-z0-9_]*`
-* Palavras-chave: `def`, `finis`, `si`, `alioqui`, `dum`, `verum`, `falsum`, `reditus`.
+* Palavras-chave: `definire`, `finis`, `si`, `alioqui`, `dum`, `verum`, `falsum`, `reditus`.
 * Operadores: `+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `<=`, `>`, `>=`.
-* Comentários: `// até o fim da linha` ou `/* bloco */`.
+* ComentÃ¡rios: `// atÃ© o fim da linha` ou `/* bloco */`.
 
 ## Sintaxe (BNF simplificada)
 
 ```
 <module>       ::= { <function> }
-<function>     ::= "def" <ident> "(" [ <param-list> ] ")" <block>
+<function>     ::= "definire" <ident> "(" [ <param-list> ] ")" <block>
 <param-list>   ::= <ident> { "," <ident> }
 <block>        ::= "{" { <statement> } "}"
 <statement>    ::= <let> | <assignment> | <if> | <while> | <return> | <expr> ";"
-<let>          ::= "def" <ident> "=" <expr> ";"
+<let>          ::= "definire" <ident> "=" <expr> ";"
 <assignment>   ::= <ident> "=" <expr> ";"
 <if>           ::= "si" <expr> <block> [ "alioqui" <block> ]
 <while>        ::= "dum" <expr> <block>
@@ -33,4 +33,4 @@ em linguagens latinas.
 * `numerus` (ponto flutuante 64-bit)
 * `verum` / `falsum` (booleano)
 
-Coerções implícitas não são realizadas; todas as conversões devem ser explícitas.
+CoerÃ§Ãµes implÃ­citas nÃ£o sÃ£o realizadas; todas as conversÃµes devem ser explÃ­citas.

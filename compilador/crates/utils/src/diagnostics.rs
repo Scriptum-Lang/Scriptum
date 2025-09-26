@@ -1,7 +1,7 @@
 use std::ops::Range;
 
-use ariadne::{Color, Fmt, Label, Report, ReportKind, Source};
-use miette::{Diagnostic, NamedSource, Report as MietteReport};
+use ariadne::{Color, Label, Report, ReportKind, Source};
+use miette::{LabeledSpan, MietteDiagnostic, NamedSource, Report as MietteReport};
 
 use crate::{source_map::SourceFile, Span};
 
@@ -47,7 +47,7 @@ pub struct Diagnostic {
 }
 
 impl Diagnostic {
-    pub fn to_ariadne(&self) -> Report<()> {
+    pub fn to_ariadne(&self) -> Report<'_, (&str, Range<usize>)> {
         let mut report = Report::build(ReportKind::Error, self.file.name(), self.span.start())
             .with_message(&self.message)
             .with_label(
@@ -69,10 +69,16 @@ impl Diagnostic {
 
     pub fn to_miette(&self) -> MietteReport {
         let source = NamedSource::new(self.file.name().to_string(), self.file.source().to_string());
-        let span: Range<usize> = self.span.start()..self.span.end();
-        MietteReport::new(self.message.clone())
-            .with_source_code(source)
-            .with_label(span)
+        let primary = LabeledSpan::new_primary_with_span(
+            Some(self.message.clone()),
+            self.span.start()..self.span.end(),
+        );
+        let mut diag = MietteDiagnostic::new(self.message.clone()).with_label(primary);
+        for (span, message) in &self.labels {
+            let label = LabeledSpan::new_with_span(Some(message.clone()), span.start()..span.end());
+            diag = diag.and_label(label);
+        }
+        MietteReport::new(diag).with_source_code(source)
     }
 }
 

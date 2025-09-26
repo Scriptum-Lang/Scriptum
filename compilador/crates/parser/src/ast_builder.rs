@@ -65,7 +65,7 @@ impl<'a> Parser<'a> {
 
     fn parse_function(&mut self) -> Result<Function, ParseError> {
         let start = self
-            .expect_kind(TokenKind::Keyword(KeywordKind::Def))?
+            .expect_kind(TokenKind::Keyword(KeywordKind::Definire))?
             .span
             .start();
         let name_tok = self.expect_identifier()?;
@@ -116,7 +116,7 @@ impl<'a> Parser<'a> {
             ParseError::new("declaração inesperada no fim do arquivo", Span::default())
         })?;
         match token.kind {
-            TokenKind::Keyword(KeywordKind::Def) => self.parse_let_statement(),
+            TokenKind::Keyword(KeywordKind::Definire) => self.parse_let_statement(),
             TokenKind::Keyword(KeywordKind::Si) => self.parse_if_statement(),
             TokenKind::Keyword(KeywordKind::Dum) => self.parse_while_statement(),
             TokenKind::Keyword(KeywordKind::Reditus) => self.parse_return_statement(),
@@ -139,7 +139,7 @@ impl<'a> Parser<'a> {
 
     fn parse_let_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self
-            .expect_kind(TokenKind::Keyword(KeywordKind::Def))?
+            .expect_kind(TokenKind::Keyword(KeywordKind::Definire))?
             .span
             .start();
         let ident = self.expect_identifier()?;
@@ -325,6 +325,7 @@ impl<'a> Parser<'a> {
             if kind == TokenKind::Operator(OperatorKind::Minus) {
                 let op_token = self.stream.next().unwrap();
                 let rhs = self.parse_unary()?;
+                let rhs_span_end = rhs.span.end();
                 let zero = Expression::new(ExpressionKind::Number(0.0), op_token.span);
                 return Ok(Expression::new(
                     ExpressionKind::Binary {
@@ -332,7 +333,7 @@ impl<'a> Parser<'a> {
                         left: Box::new(zero),
                         right: Box::new(rhs),
                     },
-                    Span::new(op_token.span.start(), rhs.span.end()),
+                    Span::new(op_token.span.start(), rhs_span_end),
                 ));
             }
         }
@@ -437,7 +438,9 @@ impl<'a> Parser<'a> {
     }
 
     fn symbol_from_span(&mut self, span: Span) -> Symbol {
-        let text = self.slice(span);
+        let start = span.start();
+        let end = span.end();
+        let text = &self.source[start..end];
         self.interner.intern(text)
     }
 

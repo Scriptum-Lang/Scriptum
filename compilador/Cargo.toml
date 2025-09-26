@@ -1,4 +1,4 @@
-[workspace]
+﻿[workspace]
 members = [
   "crates/ast",
   "crates/lexer",
@@ -19,7 +19,7 @@ authors = ["Scriptum Team"]
 [workspace.dependencies]
 ahash = "0.8"
 indexmap = { version = "2", features = ["serde"] }
-smallvec = "1"
+smallvec = { version = "1", features = ["serde"] }
 bumpalo = "3"
 memchr = "2"
 regex = "1"
@@ -37,4 +37,5 @@ codegen-units = 1
 opt-level = 3
 panic = "abort"
 strip = true
+
 

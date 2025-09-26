@@ -2,10 +2,10 @@
 #![deny(unused_must_use)]
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
-use miette::Result;
+use miette::{Report, Result};
 
 use scriptum_codegen::{emit_module, lower_module, optimize_module};
 use scriptum_lexer::{lex, TokenKind};
@@ -56,8 +56,28 @@ fn main() -> Result<()> {
     }
 }
 
+fn read_source(path: &Path) -> Result<String> {
+    fs::read_to_string(path).map_err(|err| {
+        Report::new(Error::with_source(
+            ErrorKind::Runtime,
+            format!("falha ao ler {}", path.display()),
+            err,
+        ))
+    })
+}
+
+fn write_bytes(path: &Path, bytes: &[u8]) -> Result<()> {
+    fs::write(path, bytes).map_err(|err| {
+        Report::new(Error::with_source(
+            ErrorKind::Runtime,
+            format!("falha ao escrever {}", path.display()),
+            err,
+        ))
+    })
+}
+
 fn run_lex(path: &PathBuf) -> Result<()> {
-    let source = fs::read_to_string(path)?;
+    let source = read_source(path)?;
     let tokens = lex(&source).map_err(|err| Error::new(ErrorKind::Lexico, err.message))?;
     for token in tokens {
         println!(
@@ -73,7 +93,7 @@ fn run_lex(path: &PathBuf) -> Result<()> {
 }
 
 fn run_parse(path: &PathBuf) -> Result<()> {
-    let source = fs::read_to_string(path)?;
+    let source = read_source(path)?;
     let module =
         parse_module(&source).map_err(|err| Error::new(ErrorKind::Sintatico, err.message))?;
     println!("funções parseadas: {}", module.functions.len());
@@ -81,7 +101,7 @@ fn run_parse(path: &PathBuf) -> Result<()> {
 }
 
 fn run_sema(path: &PathBuf) -> Result<()> {
-    let source = fs::read_to_string(path)?;
+    let source = read_source(path)?;
     let module =
         parse_module(&source).map_err(|err| Error::new(ErrorKind::Sintatico, err.message))?;
     analyze_module(&module).map_err(|err| Error::new(ErrorKind::Semantico, err.message))?;
@@ -90,14 +110,14 @@ fn run_sema(path: &PathBuf) -> Result<()> {
 }
 
 fn run_build(input: &PathBuf, output: &PathBuf) -> Result<()> {
-    let source = fs::read_to_string(input)?;
+    let source = read_source(input)?;
     let module =
         parse_module(&source).map_err(|err| Error::new(ErrorKind::Sintatico, err.message))?;
     analyze_module(&module).map_err(|err| Error::new(ErrorKind::Semantico, err.message))?;
     let mut ir = lower_module(&module);
     optimize_module(&mut ir);
     let bytes = emit_module(&ir);
-    fs::write(output, bytes)?;
+    write_bytes(output, &bytes)?;
     println!("bytecode gerado em {}", output.display());
     Ok(())
 }
@@ -115,7 +135,7 @@ fn run_run(input: &PathBuf) -> Result<()> {
         return Ok(());
     }
 
-    let source = fs::read_to_string(input)?;
+    let source = read_source(input)?;
     let module =
         parse_module(&source).map_err(|err| Error::new(ErrorKind::Sintatico, err.message))?;
     analyze_module(&module).map_err(|err| Error::new(ErrorKind::Semantico, err.message))?;

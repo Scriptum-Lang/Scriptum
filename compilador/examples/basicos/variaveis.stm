@@ -1,5 +1,5 @@
-def init() {
-  def a = 1;
-  def b = 2;
+﻿definire init() {
+  definire a = 1;
+  definire b = 2;
   reditus a + b;
 }
