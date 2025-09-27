@@ -3,6 +3,8 @@ use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 
+use scriptum_lexer::{tokenize, LexToken};
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = env::args().skip(1);
     let path = match args.next() {
@@ -13,12 +15,28 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
     let content = fs::read_to_string(&path)?;
-    let tokens = scriptum_lexer::tokenize(&content)?;
-    for token in tokens {
-        println!(
-            "{:?}\t{:?}\t{}..{}",
-            token.kind, token.lexeme, token.span.0, token.span.1
-        );
+    match tokenize(&content) {
+        Ok(tokens) => {
+            print_table(&tokens);
+            Ok(())
+        }
+        Err(err) => {
+            eprintln!(
+                "Erro léxico em {}:{}:{} -> {}",
+                path.display(),
+                err.line,
+                err.column,
+                err
+            );
+            Err(Box::new(err))
+        }
     }
-    Ok(())
+}
+
+fn print_table(tokens: &[LexToken]) {
+    println!("{:<30} | {:<20}", "TOKEN", "TIPO");
+    println!("{}", "-".repeat(53));
+    for token in tokens {
+        println!("{:<30} | {:<20}", token.lexeme, token.kind.type_label());
+    }
 }
