@@ -9,6 +9,15 @@ pub enum TokenKind {
     Named(&'static str),
 }
 
+impl TokenKind {
+    pub fn type_label(&self) -> String {
+        match self {
+            TokenKind::Keyword(keyword) => format!("Keyword({})", keyword),
+            TokenKind::Named(name) => (*name).to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LexToken {
     pub kind: TokenKind,
@@ -19,11 +28,17 @@ pub struct LexToken {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LexError {
     pub position: usize,
+    pub line: usize,
+    pub column: usize,
 }
 
 impl fmt::Display for LexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "lexical error at position {}", self.position)
+        write!(
+            f,
+            "lexical error at position {} (line {}, column {})",
+            self.position, self.line, self.column
+        )
     }
 }
 
@@ -31,6 +46,7 @@ impl std::error::Error for LexError {}
 
 pub fn tokenize(source: &str) -> Result<Vec<LexToken>, LexError> {
     let data: Vec<u32> = source.chars().map(|ch| ch as u32).collect();
+    let line_starts = compute_line_starts(source);
     let dfa_specs = token_dfas();
     let regex_specs = token_specs();
     let keywords = keywords();
@@ -86,8 +102,35 @@ pub fn tokenize(source: &str) -> Result<Vec<LexToken>, LexError> {
                 span: (start, end),
             });
         } else {
-            return Err(LexError { position: pos });
+            let (line, column) = line_column(&line_starts, pos);
+            return Err(LexError {
+                position: pos,
+                line,
+                column,
+            });
         }
     }
     Ok(tokens)
+}
+
+fn compute_line_starts(source: &str) -> Vec<usize> {
+    let mut starts = Vec::new();
+    starts.push(0);
+    for (idx, ch) in source.chars().enumerate() {
+        if ch == '\n' {
+            starts.push(idx + 1);
+        }
+    }
+    starts
+}
+
+fn line_column(line_starts: &[usize], pos: usize) -> (usize, usize) {
+    let line_index = match line_starts.binary_search(&pos) {
+        Ok(idx) => idx,
+        Err(idx) => idx.saturating_sub(1),
+    };
+    let line_start = line_starts.get(line_index).copied().unwrap_or_default();
+    let line = line_index + 1;
+    let column = pos.saturating_sub(line_start) + 1;
+    (line, column)
 }
