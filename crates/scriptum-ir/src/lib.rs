@@ -398,7 +398,7 @@ fn lower_expr(expr: &Expression) -> IrExpr {
                 .collect(),
             expr.span,
         ),
-        ExpressionKind::Lambda(lambda) => IrExpr::Lambda(lower_lambda(lambda), expr.span),
+        ExpressionKind::Lambda(lambda) => IrExpr::Lambda(lower_lambda(lambda.as_ref()), expr.span),
     }
 }
 
@@ -416,7 +416,7 @@ fn lower_lambda(lambda: &LambdaExpression) -> IrLambda {
             .collect(),
         return_type: lambda.return_type.as_ref().map(lower_type_expr),
         body: match &lambda.body {
-            LambdaBody::Expression(expr) => IrLambdaBody::Expr(Box::new(lower_expr(expr))),
+            LambdaBody::Expression(expr) => IrLambdaBody::Expr(Box::new(lower_expr(expr.as_ref()))),
             LambdaBody::Block(block) => {
                 IrLambdaBody::Block(lower_block_statements(&block.statements))
             }

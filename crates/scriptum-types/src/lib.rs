@@ -38,7 +38,7 @@ impl TypeDiagnostic {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Type {
     Numerus,
     Textus,

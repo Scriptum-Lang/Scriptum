@@ -1,0 +1,12 @@
+C:\Users\edigu\Documents\Unimar\Termo 6\Scriptum\target\debug\deps\serde-b04c9ad8487fc181.d: C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\edigu\Documents\Unimar\Termo\ 6\Scriptum\target\debug\build\serde-5308fca88ef0f50f\out/private.rs
+
+C:\Users\edigu\Documents\Unimar\Termo 6\Scriptum\target\debug\deps\libserde-b04c9ad8487fc181.rmeta: C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\edigu\Documents\Unimar\Termo\ 6\Scriptum\target\debug\build\serde-5308fca88ef0f50f\out/private.rs
+
+C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs:
+C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs:
+C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs:
+C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs:
+C:\Users\edigu\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs:
+C:\Users\edigu\Documents\Unimar\Termo\ 6\Scriptum\target\debug\build\serde-5308fca88ef0f50f\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\edigu\\Documents\\Unimar\\Termo 6\\Scriptum\\target\\debug\\build\\serde-5308fca88ef0f50f\\out

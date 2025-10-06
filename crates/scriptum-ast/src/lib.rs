@@ -26,7 +26,7 @@ impl Symbol {
 }
 
 /// Estrutura responsável por internar strings de forma estável.
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct StringInterner {
     entries: IndexSet<Arc<str>>,
 }
@@ -263,7 +263,7 @@ pub enum ExpressionKind {
     },
     ArrayLiteral(Vec<Expression>),
     ObjectLiteral(Vec<ObjectField>),
-    Lambda(LambdaExpression),
+    Lambda(Box<LambdaExpression>),
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -284,7 +284,7 @@ pub struct LambdaExpression {
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum LambdaBody {
-    Expression(Expression),
+    Expression(Box<Expression>),
     Block(Block),
 }
 
@@ -445,13 +445,13 @@ pub trait Visitor {
             | ExpressionKind::Index {
                 target: left,
                 index: right,
-            }
-            | ExpressionKind::Call {
-                callee: left,
-                arguments: right,
             } => {
-                self.visit_expression(left);
-                for arg in right {
+                self.visit_expression(left.as_ref());
+                self.visit_expression(right.as_ref());
+            }
+            ExpressionKind::Call { callee, arguments } => {
+                self.visit_expression(callee.as_ref());
+                for arg in arguments {
                     self.visit_expression(arg);
                 }
             }
@@ -476,7 +476,7 @@ pub trait Visitor {
                 }
             }
             ExpressionKind::Lambda(lambda) => match &lambda.body {
-                LambdaBody::Expression(expr) => self.visit_expression(expr),
+                LambdaBody::Expression(expr) => self.visit_expression(expr.as_ref()),
                 LambdaBody::Block(block) => self.visit_block(block),
             },
         }

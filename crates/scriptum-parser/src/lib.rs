@@ -9,7 +9,7 @@ use thiserror::Error;
 
 use scriptum_ast::{
     BinaryOp, Block, Expression, ExpressionKind, Function, Item, ItemKind, LambdaBody,
-    LambdaExpression, Literal, LogicalOp, Module, NodeId, NodeIdGenerator, ObjectField, Parameter,
+    LambdaExpression, Literal, LogicalOp, Module, NodeIdGenerator, ObjectField, Parameter,
     Statement, StatementKind, StringInterner, Symbol, TypeExpr, TypeExprKind, TypeField,
     TypeParameter, UnaryOp, VarDecl,
 };
@@ -59,17 +59,21 @@ struct Parser<'src> {
     errors: Vec<ParseError>,
     interner: StringInterner,
     ids: NodeIdGenerator,
+    fuel: usize,
 }
 
 impl<'src> Parser<'src> {
     fn new(source: &'src str, tokens: Vec<Token>) -> Self {
+        let fuel = tokens.len().saturating_mul(4).max(32);
+        let tokens = tokens.into();
         Self {
             source,
-            tokens: tokens.into(),
+            tokens,
             pos: 0,
             errors: Vec::new(),
             interner: StringInterner::new(),
             ids: NodeIdGenerator::new(),
+            fuel,
         }
     }
 
@@ -77,6 +81,7 @@ impl<'src> Parser<'src> {
         let start = self.current_span().map(|span| span.start()).unwrap_or(0);
         let mut items = Vec::new();
         while !self.is_at_end() {
+            let before = self.pos;
             if self.matches(TokenKind::EOF) {
                 break;
             }
@@ -84,6 +89,9 @@ impl<'src> Parser<'src> {
                 items.push(item);
             } else {
                 self.synchronize(&[TokenKind::Punctuation(Punctuation::Semicolon)]);
+            }
+            if !self.guard_progress(before, "módulo") {
+                break;
             }
         }
         let end = self
@@ -157,61 +165,64 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_generic_params(&mut self) -> Vec<TypeParameter> {
-        let mut params = Vec::new();
-        loop {
-            if let Some(tok) = self.peek_token() {
-                if tok.kind == TokenKind::Operator(Operator::Greater) {
-                    self.advance();
-                    break;
-                }
-            } else {
-                break;
-            }
-            let ident = self.expect_identifier("nome de parâmetro de tipo esperado");
-            let ident = match ident {
-                Some(token) => token,
-                None => break,
-            };
-            params.push(TypeParameter {
-                name: self.symbol_from(ident.span),
-            });
-            if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                self.expect(
-                    TokenKind::Operator(Operator::Greater),
-                    "esperado '>' em parâmetros genéricos".into(),
-                );
-                break;
-            }
-        }
+        let params = self.parse_list(
+            TokenKind::Punctuation(Punctuation::Comma),
+            TokenKind::Operator(Operator::Greater),
+            false,
+            "parâmetros genéricos",
+            |parser| {
+                let ident = parser.expect_identifier("nome de parâmetro de tipo esperado")?;
+                Some(TypeParameter {
+                    name: parser.symbol_from(ident.span),
+                })
+            },
+        );
+        self.expect(
+            TokenKind::Operator(Operator::Greater),
+            "esperado '>' em parâmetros genéricos".into(),
+        );
         params
     }
 
     fn parse_parameter_list(&mut self) -> Vec<Parameter> {
-        let mut params = Vec::new();
-        while !self.check(TokenKind::Delimiter(Delimiter::RParen)) && !self.is_at_end() {
-            let start_token = self.peek_token().unwrap();
-            let name_tok = match self.expect_identifier("nome de parâmetro esperado") {
-                Some(tok) => tok,
-                None => break,
-            };
-            let name = self.symbol_from(name_tok.span);
-            let ty = if self.matches(TokenKind::Punctuation(Punctuation::Colon)) {
-                Some(self.parse_type_expr())
-            } else {
-                None
-            };
-            let span = Span::new(start_token.span.start(), self.previous_span().end());
-            params.push(Parameter {
-                id: self.ids.fresh(),
-                span,
-                name,
-                ty,
-            });
-            if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                break;
-            }
-        }
-        params
+        self.parse_list(
+            TokenKind::Punctuation(Punctuation::Comma),
+            TokenKind::Delimiter(Delimiter::RParen),
+            true,
+            "lista de parâmetros",
+            |parser| {
+                if parser.peek_is_type_keyword() {
+                    let ty = parser.parse_simple_type().expect("tipo prefixado válido");
+                    let name_tok =
+                        parser.expect_identifier("nome de parâmetro esperado após tipo")?;
+                    let name = parser.symbol_from(name_tok.span);
+                    let span = Span::new(ty.span.start(), name_tok.span.end());
+                    return Some(Parameter {
+                        id: parser.ids.fresh(),
+                        span,
+                        name,
+                        ty: Some(ty),
+                    });
+                }
+                let name_tok = parser.expect_identifier("nome de parâmetro esperado")?;
+                let name = parser.symbol_from(name_tok.span);
+                let mut span_end = name_tok.span.end();
+                let ty = if parser.matches(TokenKind::Punctuation(Punctuation::Colon)) {
+                    let ty = parser.parse_type_expr();
+                    span_end = ty.span.end();
+                    Some(ty)
+                } else {
+                    None
+                };
+                let span = Span::new(name_tok.span.start(), span_end);
+                Some(Parameter {
+                    id: parser.ids.fresh(),
+                    span,
+                    name,
+                    ty,
+                })
+            },
+        )
     }
 
     fn parse_block(&mut self) -> Block {
@@ -229,6 +240,7 @@ impl<'src> Parser<'src> {
         };
         let mut statements = Vec::new();
         while !self.check(TokenKind::Delimiter(Delimiter::RBrace)) && !self.is_at_end() {
+            let before = self.pos;
             if let Some(stmt) = self.parse_statement() {
                 statements.push(stmt);
             } else {
@@ -236,6 +248,9 @@ impl<'src> Parser<'src> {
                     TokenKind::Punctuation(Punctuation::Semicolon),
                     TokenKind::Delimiter(Delimiter::RBrace),
                 ]);
+            }
+            if !self.guard_progress(before, "bloco") {
+                break;
             }
         }
         let rbrace = self.expect_delimiter(Delimiter::RBrace, "esperado '}'");
@@ -358,24 +373,40 @@ impl<'src> Parser<'src> {
     }
 
     fn finish_variable_decl(&mut self, mutable: bool) -> VarDecl {
-        let name_tok = self.expect_identifier("nome de variável esperado");
-        let name_tok = match name_tok {
-            Some(tok) => tok,
-            None => {
-                return VarDecl {
-                    name: self.symbol_from(self.previous_span()),
-                    mutable,
-                    type_annotation: None,
-                    initializer: None,
+        let (name_tok, type_annotation) = if self.peek_is_type_keyword() {
+            let ty = self.parse_simple_type().expect("tipo prefixado válido");
+            let name_tok = match self.expect_identifier("nome de variável esperado após tipo") {
+                Some(tok) => tok,
+                None => {
+                    return VarDecl {
+                        name: self.symbol_from(self.previous_span()),
+                        mutable,
+                        type_annotation: Some(ty),
+                        initializer: None,
+                    };
                 }
-            }
+            };
+            (name_tok, Some(ty))
+        } else {
+            let name_tok = match self.expect_identifier("nome de variável esperado") {
+                Some(tok) => tok,
+                None => {
+                    return VarDecl {
+                        name: self.symbol_from(self.previous_span()),
+                        mutable,
+                        type_annotation: None,
+                        initializer: None,
+                    };
+                }
+            };
+            let ty = if self.matches(TokenKind::Punctuation(Punctuation::Colon)) {
+                Some(self.parse_type_expr())
+            } else {
+                None
+            };
+            (name_tok, ty)
         };
         let name = self.symbol_from(name_tok.span);
-        let type_annotation = if self.matches(TokenKind::Punctuation(Punctuation::Colon)) {
-            Some(self.parse_type_expr())
-        } else {
-            None
-        };
         let initializer = if self.matches(TokenKind::Operator(Operator::Assign)) {
             Some(self.parse_expression())
         } else {
@@ -405,7 +436,7 @@ impl<'src> Parser<'src> {
             kind: StatementKind::If {
                 condition,
                 then_branch: Box::new(then_branch),
-                else_branch: else_branch.map(Box::new),
+                else_branch,
             },
         }
     }
@@ -807,14 +838,13 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_argument_list(&mut self) -> Vec<Expression> {
-        let mut args = Vec::new();
-        while !self.check(TokenKind::Delimiter(Delimiter::RParen)) && !self.is_at_end() {
-            args.push(self.parse_expression());
-            if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                break;
-            }
-        }
-        args
+        self.parse_list(
+            TokenKind::Punctuation(Punctuation::Comma),
+            TokenKind::Delimiter(Delimiter::RParen),
+            true,
+            "lista de argumentos",
+            |parser| Some(parser.parse_expression()),
+        )
     }
 
     fn parse_primary(&mut self) -> Expression {
@@ -909,13 +939,13 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_array_literal(&mut self, start: usize) -> Expression {
-        let mut elements = Vec::new();
-        while !self.check(TokenKind::Delimiter(Delimiter::RBracket)) && !self.is_at_end() {
-            elements.push(self.parse_expression());
-            if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                break;
-            }
-        }
+        let elements = self.parse_list(
+            TokenKind::Punctuation(Punctuation::Comma),
+            TokenKind::Delimiter(Delimiter::RBracket),
+            true,
+            "literal de array",
+            |parser| Some(parser.parse_expression()),
+        );
         let end = self
             .expect_delimiter(Delimiter::RBracket, "esperado ']' no literal de array")
             .map(|tok| tok.span.end())
@@ -929,25 +959,24 @@ impl<'src> Parser<'src> {
 
     fn parse_object_literal(&mut self, start: usize) -> Expression {
         self.expect_delimiter(Delimiter::LBrace, "esperado '{' após 'structura'");
-        let mut fields = Vec::new();
-        while !self.check(TokenKind::Delimiter(Delimiter::RBrace)) && !self.is_at_end() {
-            let name_tok = match self.expect_identifier("nome de campo esperado") {
-                Some(tok) => tok,
-                None => break,
-            };
-            self.expect(
-                TokenKind::Punctuation(Punctuation::Colon),
-                "esperado ':' em literal de objeto".into(),
-            );
-            let value = self.parse_expression();
-            fields.push(ObjectField {
-                key: self.symbol_from(name_tok.span),
-                value,
-            });
-            if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                break;
-            }
-        }
+        let fields = self.parse_list(
+            TokenKind::Punctuation(Punctuation::Comma),
+            TokenKind::Delimiter(Delimiter::RBrace),
+            true,
+            "literal de objeto",
+            |parser| {
+                let name_tok = parser.expect_identifier("nome de campo esperado")?;
+                parser.expect(
+                    TokenKind::Punctuation(Punctuation::Colon),
+                    "esperado ':' em literal de objeto".into(),
+                )?;
+                let value = parser.parse_expression();
+                Some(ObjectField {
+                    key: parser.symbol_from(name_tok.span),
+                    value,
+                })
+            },
+        );
         let end = self
             .expect_delimiter(Delimiter::RBrace, "esperado '}' em literal de objeto")
             .map(|tok| tok.span.end())
@@ -978,7 +1007,7 @@ impl<'src> Parser<'src> {
             LambdaBody::Block(self.parse_block())
         } else {
             let expr = self.parse_expression();
-            LambdaBody::Expression(expr)
+            LambdaBody::Expression(Box::new(expr))
         };
         let end = match &body {
             LambdaBody::Block(block) => block.span.end(),
@@ -987,14 +1016,14 @@ impl<'src> Parser<'src> {
         Expression {
             id: self.ids.fresh(),
             span: Span::new(start, end),
-            kind: ExpressionKind::Lambda(LambdaExpression {
+            kind: ExpressionKind::Lambda(Box::new(LambdaExpression {
                 id: self.ids.fresh(),
                 span: Span::new(start, end),
                 generics,
                 params,
                 return_type,
                 body,
-            }),
+            })),
         }
     }
 
@@ -1024,25 +1053,24 @@ impl<'src> Parser<'src> {
             };
         }
         if self.matches(TokenKind::Delimiter(Delimiter::LBrace)) {
-            let mut fields = Vec::new();
-            while !self.check(TokenKind::Delimiter(Delimiter::RBrace)) && !self.is_at_end() {
-                let name_tok = match self.expect_identifier("nome do campo de tipo esperado") {
-                    Some(tok) => tok,
-                    None => break,
-                };
-                self.expect(
-                    TokenKind::Punctuation(Punctuation::Colon),
-                    "esperado ':' em tipo de objeto".into(),
-                );
-                let ty = self.parse_type_expr();
-                fields.push(TypeField {
-                    name: self.symbol_from(name_tok.span),
-                    ty,
-                });
-                if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                    break;
-                }
-            }
+            let fields = self.parse_list(
+                TokenKind::Punctuation(Punctuation::Comma),
+                TokenKind::Delimiter(Delimiter::RBrace),
+                true,
+                "campos de tipo de objeto",
+                |parser| {
+                    let name_tok = parser.expect_identifier("nome do campo de tipo esperado")?;
+                    parser.expect(
+                        TokenKind::Punctuation(Punctuation::Colon),
+                        "esperado ':' em tipo de objeto".into(),
+                    )?;
+                    let ty = parser.parse_type_expr();
+                    Some(TypeField {
+                        name: parser.symbol_from(name_tok.span),
+                        ty,
+                    })
+                },
+            );
             self.expect_delimiter(Delimiter::RBrace, "esperado '}' em tipo de objeto");
             let span = Span::new(start, self.previous_span().end());
             return TypeExpr {
@@ -1058,13 +1086,13 @@ impl<'src> Parser<'src> {
                 Vec::new()
             };
             self.expect_delimiter(Delimiter::LParen, "esperado '(' em tipo de função");
-            let mut params = Vec::new();
-            while !self.check(TokenKind::Delimiter(Delimiter::RParen)) && !self.is_at_end() {
-                params.push(self.parse_type_expr());
-                if !self.matches(TokenKind::Punctuation(Punctuation::Comma)) {
-                    break;
-                }
-            }
+            let params = self.parse_list(
+                TokenKind::Punctuation(Punctuation::Comma),
+                TokenKind::Delimiter(Delimiter::RParen),
+                true,
+                "parâmetros de tipo de função",
+                |parser| Some(parser.parse_type_expr()),
+            );
             self.expect_delimiter(Delimiter::RParen, "esperado ')' em tipo de função");
             self.expect(
                 TokenKind::Punctuation(Punctuation::Arrow),
@@ -1082,13 +1110,8 @@ impl<'src> Parser<'src> {
                 },
             };
         }
-        if let Some(ident) = self.expect_identifier("tipo esperado") {
-            let span = ident.span;
-            return TypeExpr {
-                id: self.ids.fresh(),
-                span,
-                kind: TypeExprKind::Simple(self.symbol_from(span)),
-            };
+        if let Some(simple) = self.parse_simple_type() {
+            return simple;
         }
         self.error("tipo inválido", self.peek_span());
         TypeExpr {
@@ -1134,11 +1157,16 @@ impl<'src> Parser<'src> {
     }
 
     fn advance(&mut self) -> Token {
-        let token = self
-            .tokens
-            .get(self.pos)
-            .copied()
-            .unwrap_or_else(|| self.tokens.last().copied().unwrap());
+        if self.pos >= self.tokens.len() {
+            return *self.tokens.last().expect("lista de tokens vazia");
+        }
+        if self.fuel == 0 {
+            let span = self.peek_span();
+            self.error("parser paralisado: combustível esgotado", span);
+        } else {
+            self.fuel -= 1;
+        }
+        let token = self.tokens[self.pos];
         self.pos = (self.pos + 1).min(self.tokens.len());
         token
     }
@@ -1147,6 +1175,92 @@ impl<'src> Parser<'src> {
         if self.pos > 0 {
             self.pos -= 1;
         }
+    }
+
+    fn guard_progress(&mut self, before: usize, context: &str) -> bool {
+        if self.pos == before {
+            let span = self.peek_span();
+            self.error(format!("nenhum progresso ao analisar {}", context), span);
+            if !self.is_at_end() {
+                self.advance();
+            }
+            false
+        } else {
+            true
+        }
+    }
+
+    fn parse_list<T, F>(
+        &mut self,
+        separator: TokenKind,
+        terminator: TokenKind,
+        allow_trailing: bool,
+        context: &str,
+        mut parse_element: F,
+    ) -> Vec<T>
+    where
+        F: FnMut(&mut Parser<'src>) -> Option<T>,
+    {
+        let mut items = Vec::new();
+        while !self.check(terminator.clone()) && !self.is_at_end() {
+            let before = self.pos;
+            let mut progressed = false;
+            if let Some(item) = parse_element(self) {
+                items.push(item);
+                progressed = true;
+            }
+            if !self.guard_progress(before, context) {
+                break;
+            }
+            if !progressed {
+                break;
+            }
+            if self.matches(separator.clone()) {
+                if allow_trailing && self.check(terminator.clone()) {
+                    break;
+                }
+                continue;
+            }
+            break;
+        }
+        items
+    }
+    fn parse_simple_type(&mut self) -> Option<TypeExpr> {
+        let token = self.peek_token()?;
+        let keyword_ty = matches!(
+            token.kind,
+            TokenKind::Keyword(Keyword::Numerus)
+                | TokenKind::Keyword(Keyword::Textus)
+                | TokenKind::Keyword(Keyword::Booleanum)
+                | TokenKind::Keyword(Keyword::Nullum)
+                | TokenKind::Keyword(Keyword::Indefinitum)
+                | TokenKind::Keyword(Keyword::Vacuum)
+                | TokenKind::Keyword(Keyword::Quodlibet)
+        );
+        if token.kind == TokenKind::Identifier || keyword_ty {
+            let tok = self.advance();
+            return Some(TypeExpr {
+                id: self.ids.fresh(),
+                span: tok.span,
+                kind: TypeExprKind::Simple(self.symbol_from(tok.span)),
+            });
+        }
+        None
+    }
+
+    fn peek_is_type_keyword(&self) -> bool {
+        matches!(
+            self.peek_token().map(|tok| tok.kind),
+            Some(
+                TokenKind::Keyword(Keyword::Numerus)
+                    | TokenKind::Keyword(Keyword::Textus)
+                    | TokenKind::Keyword(Keyword::Booleanum)
+                    | TokenKind::Keyword(Keyword::Nullum)
+                    | TokenKind::Keyword(Keyword::Indefinitum)
+                    | TokenKind::Keyword(Keyword::Vacuum)
+                    | TokenKind::Keyword(Keyword::Quodlibet)
+            )
+        )
     }
 
     fn matches(&mut self, kind: TokenKind) -> bool {

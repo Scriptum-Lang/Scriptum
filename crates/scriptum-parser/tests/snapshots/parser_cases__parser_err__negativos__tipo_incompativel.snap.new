@@ -1,0 +1,6 @@
+---
+source: crates/scriptum-parser/tests/parser_cases.rs
+assertion_line: 173
+expression: parsed.diagnostics
+---
+[]

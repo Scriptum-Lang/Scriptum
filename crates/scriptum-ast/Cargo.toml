@@ -10,3 +10,9 @@ scriptum-utils = { path = "../scriptum-utils" }
 indexmap.workspace = true
 smallvec.workspace = true
 serde.workspace = true
+
+[dev-dependencies]
+pretty_assertions = "1"
+proptest = "1"
+scriptum-parser = { path = "../scriptum-parser" }
+

@@ -10,9 +10,6 @@ fn parse_examples() {
             let entry = entry.expect("erro lendo entrada");
             let path = entry.path();
             if path.is_dir() {
-                if path.file_name().map(|name| name == "negativos").unwrap_or(false) {
-                    continue;
-                }
                 visit(&path);
             } else if path.extension().and_then(|e| e.to_str()) == Some("stm") {
                 let source = fs::read_to_string(&path).expect("falha ao ler exemplo");
@@ -21,5 +18,5 @@ fn parse_examples() {
             }
         }
     }
-    visit(Path::new("examples"));
+    visit(Path::new("examples/ok"));
 }

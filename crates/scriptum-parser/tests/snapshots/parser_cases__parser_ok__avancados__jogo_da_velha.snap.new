@@ -1,0 +1,189 @@
+---
+source: crates/scriptum-parser/tests/parser_cases.rs
+assertion_line: 159
+expression: parsed.module
+---
+{
+  "id": 16,
+  "span": {
+    "start": 0,
+    "end": 154
+  },
+  "interner": {
+    "entries": [
+      "init",
+      "numerus",
+      "booleanum",
+      "vencedor"
+    ]
+  },
+  "items": [
+    {
+      "id": 15,
+      "span": {
+        "start": 0,
+        "end": 152
+      },
+      "kind": {
+        "Function": {
+          "name": 0,
+          "generics": [],
+          "params": [],
+          "return_type": {
+            "id": 0,
+            "span": {
+              "start": 18,
+              "end": 25
+            },
+            "kind": {
+              "Simple": 1
+            }
+          },
+          "body": {
+            "id": 14,
+            "span": {
+              "start": 26,
+              "end": 152
+            },
+            "statements": [
+              {
+                "id": 3,
+                "span": {
+                  "start": 33,
+                  "end": 71
+                },
+                "kind": {
+                  "Let": {
+                    "name": 3,
+                    "mutable": true,
+                    "type_annotation": {
+                      "id": 1,
+                      "span": {
+                        "start": 43,
+                        "end": 52
+                      },
+                      "kind": {
+                        "Simple": 2
+                      }
+                    },
+                    "initializer": {
+                      "id": 2,
+                      "span": {
+                        "start": 64,
+                        "end": 70
+                      },
+                      "kind": {
+                        "Literal": {
+                          "Booleanum": false
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "id": 13,
+                "span": {
+                  "start": 77,
+                  "end": 115
+                },
+                "kind": {
+                  "If": {
+                    "condition": {
+                      "id": 4,
+                      "span": {
+                        "start": 80,
+                        "end": 88
+                      },
+                      "kind": {
+                        "Identifier": 3
+                      }
+                    },
+                    "then_branch": {
+                      "id": 8,
+                      "span": {
+                        "start": 89,
+                        "end": 115
+                      },
+                      "kind": {
+                        "Block": {
+                          "id": 7,
+                          "span": {
+                            "start": 89,
+                            "end": 115
+                          },
+                          "statements": [
+                            {
+                              "id": 6,
+                              "span": {
+                                "start": 100,
+                                "end": 108
+                              },
+                              "kind": {
+                                "Return": {
+                                  "id": 5,
+                                  "span": {
+                                    "start": 106,
+                                    "end": 107
+                                  },
+                                  "kind": {
+                                    "Literal": {
+                                      "Numerus": 1.0
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "else_branch": {
+                      "id": 12,
+                      "span": {
+                        "start": 123,
+                        "end": 149
+                      },
+                      "kind": {
+                        "Block": {
+                          "id": 11,
+                          "span": {
+                            "start": 123,
+                            "end": 149
+                          },
+                          "statements": [
+                            {
+                              "id": 10,
+                              "span": {
+                                "start": 134,
+                                "end": 142
+                              },
+                              "kind": {
+                                "Return": {
+                                  "id": 9,
+                                  "span": {
+                                    "start": 140,
+                                    "end": 141
+                                  },
+                                  "kind": {
+                                    "Literal": {
+                                      "Numerus": 0.0
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -19,3 +19,7 @@ scriptum-types = { path = "../scriptum-types" }
 scriptum-ir = { path = "../scriptum-ir" }
 scriptum-codegen = { path = "../scriptum-codegen" }
 rayon.workspace = true
+
+[dev-dependencies]
+trycmd = "0.14"
+

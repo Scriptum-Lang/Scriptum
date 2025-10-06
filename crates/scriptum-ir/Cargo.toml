@@ -12,3 +12,10 @@ indexmap.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 smallvec.workspace = true
+
+[dev-dependencies]
+glob = "0.3"
+scriptum-parser = { path = "../scriptum-parser" }
+pretty_assertions = "1"
+insta = { version = "1", features = ["json", "glob"] }
+

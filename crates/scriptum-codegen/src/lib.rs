@@ -48,11 +48,13 @@ impl<'a> PrettyPrinter<'a> {
     fn module(&mut self, module: &ModuleIr) {
         for global in &module.globals {
             self.write_indent();
+            let name = self.interner.resolve(global.name);
             if global.mutable {
-                write!(self.buffer, "mutabilis {}", self.resolve(global.name)).unwrap();
+                self.buffer.push_str("mutabilis ");
             } else {
-                write!(self.buffer, "constans {}", self.resolve(global.name)).unwrap();
+                self.buffer.push_str("constans ");
             }
+            self.buffer.push_str(name);
             if let Some(ty) = &global.ty {
                 self.buffer.push_str(": ");
                 self.type_expr(ty);
@@ -71,15 +73,17 @@ impl<'a> PrettyPrinter<'a> {
 
     fn function(&mut self, function: &FunctionIr) {
         self.write_indent();
-        let name = self.resolve(function.name);
-        write!(self.buffer, "functio {}", name).unwrap();
+        let name = self.interner.resolve(function.name);
+        self.buffer.push_str("functio ");
+        self.buffer.push_str(name);
         if !function.generics.is_empty() {
             self.buffer.push('<');
             for (idx, generic) in function.generics.iter().enumerate() {
                 if idx > 0 {
                     self.buffer.push_str(", ");
                 }
-                self.buffer.push_str(self.resolve(*generic));
+                let generic_name = self.interner.resolve(*generic);
+                self.buffer.push_str(generic_name);
             }
             self.buffer.push('>');
         }
@@ -88,7 +92,8 @@ impl<'a> PrettyPrinter<'a> {
             if idx > 0 {
                 self.buffer.push_str(", ");
             }
-            self.buffer.push_str(self.resolve(param.name));
+            let param_name = self.interner.resolve(param.name);
+            self.buffer.push_str(param_name);
             if let Some(ty) = &param.ty {
                 self.buffer.push_str(": ");
                 self.type_expr(ty);
@@ -124,11 +129,13 @@ impl<'a> PrettyPrinter<'a> {
                 ..
             } => {
                 self.write_indent();
+                let name_text = self.interner.resolve(*name);
                 if *mutable {
-                    write!(self.buffer, "mutabilis {}", self.resolve(*name)).unwrap();
+                    self.buffer.push_str("mutabilis ");
                 } else {
-                    write!(self.buffer, "constans {}", self.resolve(*name)).unwrap();
+                    self.buffer.push_str("constans ");
                 }
+                self.buffer.push_str(name_text);
                 if let Some(ty) = ty {
                     write!(self.buffer, ": ").unwrap();
                     self.type_expr(ty);
@@ -188,7 +195,10 @@ impl<'a> PrettyPrinter<'a> {
                 ..
             } => {
                 self.write_indent();
-                write!(self.buffer, "pro {} in ", self.resolve(*binding)).unwrap();
+                let binding_name = self.interner.resolve(*binding);
+                self.buffer.push_str("pro ");
+                self.buffer.push_str(binding_name);
+                self.buffer.push_str(" in ");
                 self.expr(iterator);
                 self.buffer.push(' ');
                 self.block(body);
@@ -206,7 +216,10 @@ impl<'a> PrettyPrinter<'a> {
 
     fn expr(&mut self, expr: &IrExpr) {
         match expr {
-            IrExpr::Identifier(sym, _) => self.buffer.push_str(self.resolve(*sym)),
+            IrExpr::Identifier(sym, _) => {
+                let name = self.interner.resolve(*sym);
+                self.buffer.push_str(name);
+            }
             IrExpr::Literal(lit, _) => self.literal(lit),
             IrExpr::Unary { op, expr, .. } => {
                 let symbol = match op {
@@ -281,7 +294,9 @@ impl<'a> PrettyPrinter<'a> {
                 target, property, ..
             } => {
                 self.expr(target);
-                write!(self.buffer, ".{}", self.resolve(*property)).unwrap();
+                self.buffer.push('.');
+                let property_name = self.interner.resolve(*property);
+                self.buffer.push_str(property_name);
             }
             IrExpr::ArrayLiteral(elements, _) => {
                 self.buffer.push('[');
@@ -299,7 +314,9 @@ impl<'a> PrettyPrinter<'a> {
                     if idx > 0 {
                         self.buffer.push_str(", ");
                     }
-                    write!(self.buffer, "{}: ", self.resolve(field.key)).unwrap();
+                    let field_name = self.interner.resolve(field.key);
+                    self.buffer.push_str(field_name);
+                    self.buffer.push_str(": ");
                     self.expr(&field.value);
                 }
                 self.buffer.push('}');
@@ -312,7 +329,8 @@ impl<'a> PrettyPrinter<'a> {
                         if idx > 0 {
                             self.buffer.push_str(", ");
                         }
-                        self.buffer.push_str(self.resolve(*generic));
+                        let generic_name = self.interner.resolve(*generic);
+                self.buffer.push_str(generic_name);
                     }
                     self.buffer.push('>');
                 }
@@ -321,7 +339,8 @@ impl<'a> PrettyPrinter<'a> {
                     if idx > 0 {
                         self.buffer.push_str(", ");
                     }
-                    self.buffer.push_str(self.resolve(param.name));
+                    let param_name = self.interner.resolve(param.name);
+            self.buffer.push_str(param_name);
                     if let Some(ty) = &param.ty {
                         self.buffer.push_str(": ");
                         self.type_expr(ty);
@@ -374,7 +393,10 @@ impl<'a> PrettyPrinter<'a> {
 
     fn type_expr(&mut self, ty: &IrTypeExpr) {
         match &ty.kind {
-            IrTypeExprKind::Simple(sym) => self.buffer.push_str(self.resolve(*sym)),
+            IrTypeExprKind::Simple(sym) => {
+                let name = self.interner.resolve(*sym);
+                self.buffer.push_str(name);
+            }
             IrTypeExprKind::Array(inner) => {
                 self.buffer.push('[');
                 self.type_expr(inner);
@@ -386,7 +408,8 @@ impl<'a> PrettyPrinter<'a> {
                     if idx > 0 {
                         self.buffer.push_str(", ");
                     }
-                    self.buffer.push_str(self.resolve(field.name));
+                    let field_name = self.interner.resolve(field.name);
+                    self.buffer.push_str(field_name);
                     self.buffer.push_str(": ");
                     self.type_expr(&field.ty);
                 }
@@ -404,7 +427,8 @@ impl<'a> PrettyPrinter<'a> {
                         if idx > 0 {
                             self.buffer.push_str(", ");
                         }
-                        self.buffer.push_str(self.resolve(*generic));
+                        let generic_name = self.interner.resolve(*generic);
+                self.buffer.push_str(generic_name);
                     }
                     self.buffer.push('>');
                 }
@@ -423,10 +447,6 @@ impl<'a> PrettyPrinter<'a> {
                 self.buffer.push('?');
             }
         }
-    }
-
-    fn resolve(&self, sym: Symbol) -> &str {
-        self.interner.resolve(sym)
     }
 
     fn write_indent(&mut self) {
