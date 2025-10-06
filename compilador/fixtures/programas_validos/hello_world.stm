@@ -1,4 +1,0 @@
-﻿definire init() {
-  definire mensagem = 1;
-  reditus mensagem;
-}

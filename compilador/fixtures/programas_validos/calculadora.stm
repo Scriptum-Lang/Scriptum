@@ -1,8 +1,0 @@
-﻿definire soma(a, b) {
-  reditus a + b;
-}
-
-definire init() {
-  definire resultado = soma(2, 3);
-  reditus resultado;
-}

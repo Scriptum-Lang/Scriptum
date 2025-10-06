@@ -1,9 +1,0 @@
-﻿definire depositum(saldo, valor) {
-  reditus saldo + valor;
-}
-
-definire init() {
-  definire saldo = 100;
-  saldo = depositum(saldo, 50);
-  reditus saldo - 20;
-}

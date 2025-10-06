@@ -1,4 +1,0 @@
-﻿definire init() {
-  definire x = 10@;
-  reditus x;
-}

@@ -1,7 +1,0 @@
-﻿definire quadratum(x) {
-  reditus x * x;
-}
-
-definire init() {
-  reditus quadratum(5);
-}

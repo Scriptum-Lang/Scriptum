@@ -1,0 +1,7 @@
+functio quadratum(numerus x) -> numerus {
+    redde x * x;
+}
+
+functio init() -> numerus {
+    redde quadratum(5);
+}

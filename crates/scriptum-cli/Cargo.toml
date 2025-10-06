@@ -1,0 +1,21 @@
+[package]
+name = "scriptum-cli"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+ariadne.workspace = true
+clap.workspace = true
+miette.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+scriptum-utils = { path = "../scriptum-utils" }
+scriptum-lexer = { path = "../scriptum-lexer" }
+scriptum-parser = { path = "../scriptum-parser" }
+scriptum-ast = { path = "../scriptum-ast" }
+scriptum-types = { path = "../scriptum-types" }
+scriptum-ir = { path = "../scriptum-ir" }
+scriptum-codegen = { path = "../scriptum-codegen" }
+rayon.workspace = true

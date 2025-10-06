@@ -1,0 +1,8 @@
+functio init() -> numerus {
+    mutabilis booleanum vencedor = falsum;
+    si vencedor {
+        redde 1;
+    } aliter {
+        redde 0;
+    }
+}

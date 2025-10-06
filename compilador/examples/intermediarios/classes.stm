@@ -1,7 +1,0 @@
-﻿definire init() {
-  definire saldo = 100;
-  dum saldo > 0 {
-    saldo = saldo - 10;
-  }
-  reditus saldo;
-}

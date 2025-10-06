@@ -1,5 +1,0 @@
-﻿definire init() {
-  definire a = 1;
-  definire b = 2;
-  reditus a + b;
-}
