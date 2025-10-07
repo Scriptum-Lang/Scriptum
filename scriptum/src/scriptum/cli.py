@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 import click
 
-from . import tokens
+from . import __version__, tokens
 from .driver import CompilerDriver, Stage
 from .lexer.generator import write_tables
 from .lexer.lexer import LexerConfig, ScriptumLexer
@@ -21,6 +21,12 @@ from .text import SourceFile
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 def cli() -> None:
     """Scriptum build and developer utilities."""
+
+
+@cli.command("version")
+def version_cmd() -> None:
+    """Show Scriptum CLI version."""
+    click.echo(f"Scriptum CLI version {__version__}")
 
 
 @cli.command("compile")
@@ -90,6 +96,24 @@ def parse_cmd(source: pathlib.Path, dump_ast: bool) -> None:
         click.echo(json.dumps(_ast_to_dict(module), indent=2, ensure_ascii=False))
     else:
         click.echo(f"Parsed {source}")
+
+
+@cli.command("run")
+@click.argument(
+    "source",
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+)
+def run_cmd(source: pathlib.Path) -> None:
+    """
+    Run a Scriptum program (placeholder).
+
+    This command will eventually execute the full compilation pipeline and run
+    the generated program. For now, it simply notifies the feature gap.
+    """
+
+    click.echo(
+        f"'scriptum run' is not implemented yet. Parsed {source.name} successfully.",
+    )
 
 
 def _ast_to_dict(value: Any) -> Any:
