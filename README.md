@@ -4,7 +4,7 @@ Scriptum é uma linguagem com sintaxe inspirada em JavaScript, palavras-chave em
 
 ## Estrutura
 
-- `scriptum/src/scriptum/`: código-fonte principal (CLI, driver, léxico, parser, AST, semântica, IR/codegen).
+- `src/scriptum/`: código-fonte principal (CLI, driver, léxico, parser, AST, semântica, IR/codegen).
 - `scripts/`: utilitários para geração de autômatos e automação de commits.
 - `tests/`: suíte de testes (fixtures compartilhados ficam em `tests/fixtures/`).
 - `docs/`: documentação de referência e logs de desenvolvimento.
