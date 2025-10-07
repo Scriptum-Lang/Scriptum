@@ -1,17 +1,19 @@
-"""
-Symbol table primitives for Scriptum semantic analysis.
-"""
+"""Symbol table utilities for Scriptum semantic analysis."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from .types import Type
+
 
 @dataclass(slots=True)
 class Symbol:
     name: str
-    type_name: Optional[str] = None
+    type: Type
+    mutable: bool
+    span: Optional[object] = None
 
 
 @dataclass(slots=True)
@@ -27,24 +29,34 @@ class Scope:
         return self.symbols.get(name)
 
 
-@dataclass(slots=True)
 class SymbolTable:
-    scopes: List[Scope] = field(default_factory=lambda: [Scope()])
+    def __init__(self) -> None:
+        self._scopes: List[Scope] = [Scope()]
 
     def push_scope(self) -> None:
-        self.scopes.append(Scope())
+        self._scopes.append(Scope())
 
     def pop_scope(self) -> None:
-        if len(self.scopes) == 1:
-            raise ValueError("Cannot pop the global scope.")
-        self.scopes.pop()
+        if len(self._scopes) == 1:
+            raise ValueError("Cannot pop global scope")
+        self._scopes.pop()
 
     def declare(self, symbol: Symbol) -> None:
-        self.scopes[-1].declare(symbol)
+        self._scopes[-1].declare(symbol)
 
     def lookup(self, name: str) -> Optional[Symbol]:
-        for scope in reversed(self.scopes):
-            candidate = scope.lookup(name)
-            if candidate is not None:
-                return candidate
+        for scope in reversed(self._scopes):
+            symbol = scope.lookup(name)
+            if symbol is not None:
+                return symbol
+        return None
+
+    def assign(self, name: str, value_type: Type) -> Optional[str]:
+        symbol = self.lookup(name)
+        if symbol is None:
+            return f"Undeclared identifier '{name}'"
+        if not symbol.mutable:
+            return f"Cannot assign to immutable symbol '{name}'"
+        if not symbol.type.is_assignable_from(value_type):
+            return f"Type mismatch: cannot assign {value_type} to {symbol.type}"
         return None
