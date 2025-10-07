@@ -1,0 +1,7 @@
+functio init(numerus valor) -> numerus {
+    si valor > 0 {
+        redde 1;
+    } aliter {
+        redde 0;
+    }
+}

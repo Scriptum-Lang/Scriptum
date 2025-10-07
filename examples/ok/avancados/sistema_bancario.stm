@@ -1,0 +1,9 @@
+functio depositum(numerus saldo, numerus valor) -> numerus {
+    redde saldo + valor;
+}
+
+functio init() -> numerus {
+    mutabilis numerus saldo = 100;
+    saldo = depositum(saldo, 50);
+    redde saldo - 20;
+}

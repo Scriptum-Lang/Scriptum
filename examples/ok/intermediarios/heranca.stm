@@ -1,0 +1,5 @@
+functio init() -> numerus {
+    mutabilis numerus base = 5;
+    mutabilis numerus incremento = 3;
+    redde base + incremento;
+}
