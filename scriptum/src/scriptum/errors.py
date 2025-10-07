@@ -22,3 +22,14 @@ class CompilerInternalError(CompilerError):
 
 class CompilerNotImplemented(CompilerError):
     """Raised for pipeline stages that lack an implementation."""
+
+
+class LexerError(CompilerError):
+    """Raised when the lexer cannot tokenise the provided input."""
+
+    def __init__(self, message: str, span: "Span") -> None:
+        super().__init__(message)
+        self.span = span
+
+
+from .text import Span  # noqa: E402  (late import to avoid circular dependency)
