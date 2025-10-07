@@ -9,7 +9,7 @@ can be implemented without waiting for the low-level logic.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Iterator, List, Sequence
+from typing import Iterator, List, Sequence
 
 from .. import errors, text, tokens
 from . import spec
@@ -27,7 +27,7 @@ class ScriptumLexer:
 
     def __init__(self, config: LexerConfig | None = None) -> None:
         self.config = config or LexerConfig()
-        self._token_spec = spec.build_default_spec()
+        self._patterns = spec.TOKEN_PATTERNS
 
     def tokenize(self, source: text.SourceFile) -> List[tokens.Token]:
         """
@@ -47,12 +47,12 @@ class ScriptumLexer:
 
     @property
     def keywords(self) -> Sequence[str]:
-        return spec.KEYWORDS
+        return tokens.KEYWORDS
 
     @property
     def operators(self) -> Sequence[str]:
-        return spec.OPERATORS
+        return tokens.OPERATORS
 
     @property
     def punctuation(self) -> Sequence[str]:
-        return spec.PUNCTUATION
+        return tokens.PUNCTUATION + tokens.DELIMITERS

@@ -1,101 +1,176 @@
 """
-Token specification for the Scriptum lexer.
+Declarative lexical specification for the Scriptum lexer.
 
-This module records keywords, operators and punctuation in a structured form so
-the lexer can be generated or validated automatically.
+Each token is represented by a regular expression along with metadata that the
+`build_afd.py` script serialises into `tables.json`.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
-from typing import Dict, List, Sequence
+from typing import Iterable, List
+
+from .. import tokens
 
 
-KEYWORDS: Sequence[str] = (
-    "mutabilis",
-    "constans",
-    "functio",
-    "structura",
-    "si",
-    "aliter",
-    "dum",
-    "pro",
-    "in",
-    "de",
-    "redde",
-    "frange",
-    "perge",
-    "verum",
-    "falsum",
-    "nullum",
-    "indefinitum",
-    "numerus",
-    "textus",
-    "booleanum",
-    "vacuum",
-    "quodlibet",
-)
-
-
-OPERATORS: Sequence[str] = (
-    "=",
-    "?:",
-    "??",
-    "||",
-    "&&",
-    "==",
-    "!=",
-    "===",
-    "!==",
-    ">",
-    ">=",
-    "<",
-    "<=",
-    "+",
-    "-",
-    "*",
-    "/",
-    "%",
-    "**",
-    "!",
-    ".",
-)
-
-
-PUNCTUATION: Sequence[str] = (
-    ",",
-    ";",
-    ":",
-    "::",
-    "->",
-    "=>",
-    "?",
-    "(",
-    ")",
-    "{",
-    "}",
-    "[",
-    "]",
-)
-
-
-@dataclass(slots=True)
-class TokenSpec:
-    """Definition of a token accepted by the lexer DFAs."""
+@dataclass(frozen=True, slots=True)
+class TokenPattern:
+    """Single token rule used by the lexer generator."""
 
     name: str
+    kind: tokens.TokenKind
     pattern: str
     priority: int = 0
+    ignore: bool = False
+
+    def as_json(self) -> dict:
+        return {
+            "name": self.name,
+            "kind": self.kind.name,
+            "pattern": self.pattern,
+            "priority": self.priority,
+            "ignore": self.ignore,
+        }
 
 
-def build_default_spec() -> Dict[str, TokenSpec]:
-    """Return the token specification used by the Scriptum lexer."""
+def literal_regex(literal: str) -> str:
+    """Return a regex that matches a literal exactly."""
+
+    return re.escape(literal)
+
+
+_LITERAL_NAMES = {
+    "!": "BANG",
+    '"': "DQUOTE",
+    "$": "DOLLAR",
+    "%": "PERCENT",
+    "&": "AMP",
+    "'": "SQUOTE",
+    "(": "LPAREN",
+    ")": "RPAREN",
+    "*": "STAR",
+    "+": "PLUS",
+    ",": "COMMA",
+    "-": "MINUS",
+    ".": "DOT",
+    "/": "SLASH",
+    ":": "COLON",
+    ";": "SEMI",
+    "<": "LT",
+    "=": "EQ",
+    ">": "GT",
+    "?": "QMARK",
+    "[": "LBRACKET",
+    "]": "RBRACKET",
+    "{": "LBRACE",
+    "|": "BAR",
+    "}": "RBRACE",
+}
+
+
+def literal_name(prefix: str, literal: str) -> str:
+    """Produce a stable name for literal token entries."""
+
+    parts = [_LITERAL_NAMES.get(ch, f"U{ord(ch):04X}") for ch in literal]
+    return f"{prefix}_{'_'.join(parts)}"
+
+
+TOKEN_PATTERNS: List[TokenPattern] = [
+    TokenPattern(
+        name="WHITESPACE",
+        kind=tokens.TokenKind.WHITESPACE,
+        pattern=r"[ \t\r\n\f\v]+",
+        priority=100,
+        ignore=True,
+    ),
+    TokenPattern(
+        name="COMMENT_LINE",
+        kind=tokens.TokenKind.COMMENT,
+        pattern=r"//[^\r\n]*",
+        priority=90,
+        ignore=True,
+    ),
+    TokenPattern(
+        name="COMMENT_BLOCK",
+        kind=tokens.TokenKind.COMMENT,
+        pattern=r"/\*(?:.|\r|\n)*?\*/",
+        priority=90,
+        ignore=True,
+    ),
+    TokenPattern(
+        name="NUMBER_LITERAL",
+        kind=tokens.TokenKind.NUMBER_LITERAL,
+        pattern=r"-?(?:0|[1-9][0-9_]*)(?:\.[0-9_]+)?(?:[eE][+-]?[0-9_]+)?",
+        priority=70,
+    ),
+    TokenPattern(
+        name="STRING_LITERAL",
+        kind=tokens.TokenKind.STRING_LITERAL,
+        pattern=r'"(?:[^"\\]|\\["\\\/bfnrt]|\\u[0-9a-fA-F]{4})*"',
+        priority=70,
+    ),
+    TokenPattern(
+        name="IDENTIFIER",
+        kind=tokens.TokenKind.IDENTIFIER,
+        pattern=r"[A-Za-z_][A-Za-z0-9_$]*",
+        priority=60,
+    ),
+]
+
+# Literal tokens (operators first by length, then punctuation, then delimiters).
+
+for literal in sorted(tokens.OPERATORS, key=lambda lit: (-len(lit), lit)):
+    TOKEN_PATTERNS.append(
+        TokenPattern(
+            name=literal_name("OP", literal),
+            kind=tokens.TokenKind.OPERATOR,
+            pattern=literal_regex(literal),
+            priority=50,
+        )
+    )
+
+for literal in sorted(tokens.PUNCTUATION, key=lambda lit: (-len(lit), lit)):
+    TOKEN_PATTERNS.append(
+        TokenPattern(
+            name=literal_name("PUNC", literal),
+            kind=tokens.TokenKind.PUNCTUATION,
+            pattern=literal_regex(literal),
+            priority=40,
+        )
+    )
+
+for literal in sorted(tokens.DELIMITERS, key=lambda lit: (-len(lit), lit)):
+    TOKEN_PATTERNS.append(
+        TokenPattern(
+            name=literal_name("DELIM", literal),
+            kind=tokens.TokenKind.DELIMITER,
+            pattern=literal_regex(literal),
+            priority=40,
+        )
+    )
+
+
+ALPHABET = {
+    "letters": "A-Z a-z _",
+    "digits": "0-9",
+    "symbols": sorted(
+        {
+            ch
+            for literal in tokens.all_literals()
+            for ch in literal
+        }
+        | {"$", '"', "'", "_"}
+    ),
+}
+
+
+def to_json() -> dict:
+    """Return a serialisable representation consumed by the DFA builder."""
 
     return {
-        "identifier": TokenSpec(name="identifier", pattern=r"[A-Za-z_][A-Za-z0-9_$]*"),
-        "number": TokenSpec(name="number", pattern=r"-?[0-9][0-9_]*(?:\\.[0-9_]+)?(?:[eE][+-]?[0-9_]+)?"),
-        "string": TokenSpec(name="string", pattern=r'"([^"\\\\]|\\\\.)*"'),
-        "whitespace": TokenSpec(name="whitespace", pattern=r"[ \\t\\n\\r]+", priority=-1),
-        "comment_line": TokenSpec(name="comment_line", pattern=r"//.*", priority=-1),
-        "comment_block": TokenSpec(name="comment_block", pattern=r"/\\*.*?\\*/", priority=-1),
+        "version": 1,
+        "alphabet": ALPHABET,
+        "keywords": list(tokens.KEYWORDS),
+        "token_patterns": [pattern.as_json() for pattern in TOKEN_PATTERNS],
     }

@@ -1,6 +1,341 @@
 {
   "version": 1,
-  "keywords": [],
-  "operators": [],
-  "dfa": {}
+  "alphabet": {
+    "letters": "A-Z a-z _",
+    "digits": "0-9",
+    "symbols": [
+      "!",
+      "\"",
+      "$",
+      "%",
+      "&",
+      "'",
+      "(",
+      ")",
+      "*",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      ":",
+      ";",
+      "<",
+      "=",
+      ">",
+      "?",
+      "[",
+      "]",
+      "_",
+      "{",
+      "|",
+      "}"
+    ]
+  },
+  "keywords": [
+    "mutabilis",
+    "constans",
+    "functio",
+    "structura",
+    "si",
+    "aliter",
+    "dum",
+    "pro",
+    "in",
+    "de",
+    "redde",
+    "frange",
+    "perge",
+    "verum",
+    "falsum",
+    "nullum",
+    "indefinitum",
+    "numerus",
+    "textus",
+    "booleanum",
+    "vacuum",
+    "quodlibet"
+  ],
+  "token_patterns": [
+    {
+      "name": "WHITESPACE",
+      "kind": "WHITESPACE",
+      "pattern": "[ \\t\\r\\n\\f\\v]+",
+      "priority": 100,
+      "ignore": true
+    },
+    {
+      "name": "COMMENT_LINE",
+      "kind": "COMMENT",
+      "pattern": "//[^\\r\\n]*",
+      "priority": 90,
+      "ignore": true
+    },
+    {
+      "name": "COMMENT_BLOCK",
+      "kind": "COMMENT",
+      "pattern": "/\\*(?:.|\\r|\\n)*?\\*/",
+      "priority": 90,
+      "ignore": true
+    },
+    {
+      "name": "NUMBER_LITERAL",
+      "kind": "NUMBER_LITERAL",
+      "pattern": "-?(?:0|[1-9][0-9_]*)(?:\\.[0-9_]+)?(?:[eE][+-]?[0-9_]+)?",
+      "priority": 70,
+      "ignore": false
+    },
+    {
+      "name": "STRING_LITERAL",
+      "kind": "STRING_LITERAL",
+      "pattern": "\"(?:[^\"\\\\]|\\\\[\"\\\\\\/bfnrt]|\\\\u[0-9a-fA-F]{4})*\"",
+      "priority": 70,
+      "ignore": false
+    },
+    {
+      "name": "IDENTIFIER",
+      "kind": "IDENTIFIER",
+      "pattern": "[A-Za-z_][A-Za-z0-9_$]*",
+      "priority": 60,
+      "ignore": false
+    },
+    {
+      "name": "OP_BANG_EQ_EQ",
+      "kind": "OPERATOR",
+      "pattern": "!==",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_EQ_EQ_EQ",
+      "kind": "OPERATOR",
+      "pattern": "===",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_BANG_EQ",
+      "kind": "OPERATOR",
+      "pattern": "!=",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_AMP_AMP",
+      "kind": "OPERATOR",
+      "pattern": "\\&\\&",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_STAR_STAR",
+      "kind": "OPERATOR",
+      "pattern": "\\*\\*",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_LT_EQ",
+      "kind": "OPERATOR",
+      "pattern": "<=",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_EQ_EQ",
+      "kind": "OPERATOR",
+      "pattern": "==",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_GT_EQ",
+      "kind": "OPERATOR",
+      "pattern": ">=",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_QMARK_COLON",
+      "kind": "OPERATOR",
+      "pattern": "\\?:",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_QMARK_QMARK",
+      "kind": "OPERATOR",
+      "pattern": "\\?\\?",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_BAR_BAR",
+      "kind": "OPERATOR",
+      "pattern": "\\|\\|",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_BANG",
+      "kind": "OPERATOR",
+      "pattern": "!",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_PERCENT",
+      "kind": "OPERATOR",
+      "pattern": "%",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_STAR",
+      "kind": "OPERATOR",
+      "pattern": "\\*",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_PLUS",
+      "kind": "OPERATOR",
+      "pattern": "\\+",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_MINUS",
+      "kind": "OPERATOR",
+      "pattern": "\\-",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_DOT",
+      "kind": "OPERATOR",
+      "pattern": "\\.",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_SLASH",
+      "kind": "OPERATOR",
+      "pattern": "/",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_LT",
+      "kind": "OPERATOR",
+      "pattern": "<",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_EQ",
+      "kind": "OPERATOR",
+      "pattern": "=",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "OP_GT",
+      "kind": "OPERATOR",
+      "pattern": ">",
+      "priority": 50,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_MINUS_GT",
+      "kind": "PUNCTUATION",
+      "pattern": "\\->",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_COLON_COLON",
+      "kind": "PUNCTUATION",
+      "pattern": "::",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_EQ_GT",
+      "kind": "PUNCTUATION",
+      "pattern": "=>",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_COMMA",
+      "kind": "PUNCTUATION",
+      "pattern": ",",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_COLON",
+      "kind": "PUNCTUATION",
+      "pattern": ":",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_SEMI",
+      "kind": "PUNCTUATION",
+      "pattern": ";",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "PUNC_QMARK",
+      "kind": "PUNCTUATION",
+      "pattern": "\\?",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_LPAREN",
+      "kind": "DELIMITER",
+      "pattern": "\\(",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_RPAREN",
+      "kind": "DELIMITER",
+      "pattern": "\\)",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_LBRACKET",
+      "kind": "DELIMITER",
+      "pattern": "\\[",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_RBRACKET",
+      "kind": "DELIMITER",
+      "pattern": "\\]",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_LBRACE",
+      "kind": "DELIMITER",
+      "pattern": "\\{",
+      "priority": 40,
+      "ignore": false
+    },
+    {
+      "name": "DELIM_RBRACE",
+      "kind": "DELIMITER",
+      "pattern": "\\}",
+      "priority": 40,
+      "ignore": false
+    }
+  ]
 }
