@@ -1,0 +1,9 @@
+```mermaid
+graph LR
+    A[Arquivo .stm] --> B[scriptum-lexer]
+    B --> C[scriptum-parser]
+    C --> D[scriptum-types]
+    D --> E[scriptum-ir]
+    E --> F[scriptum-codegen]
+    F --> G[Saída formatada / bytecode]
+```
