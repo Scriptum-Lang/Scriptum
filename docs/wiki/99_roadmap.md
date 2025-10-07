@@ -1,24 +1,25 @@
 # Roadmap (99)
 
-## Curto prazo
+## Entregas atuais
+- Lexer determinístico com geração de tabelas (`scripts/build_afd.py`) e CLI (`scriptum lex`).
+- Parser híbrido (Pratt + declarações) com AST tipada e suporte à CLI (`scriptum parse`).
+- Analisador semântico inicial: tabela de símbolos, verificador de tipos básico e diagnósticos.
+- Suite de testes cobrindo lexing, parsing e semântica (`pytest -q`).
 
-- Cobertura de testes: aumentar `examples/` com casos positivos/negativos.
-- Implementar lint de variÃ¡veis nÃ£o utilizadas (`scriptum-types`).
-- Adicionar opÃ§Ã£o `--emit-ir` ao CLI para depuraÃ§Ã£o.
-- Concluir suporte a `=>` (lambdas expressÃ£o) na pretty-printing.
+## Próximos passos (curto prazo)
+- Integrar análise semântica à CLI (`scriptum sema` ou `scriptum run`).
+- Expandir verificação de tipos: chamadas de função, objetos e arrays tipados.
+- Adicionar testes automatizados para diagnósticos negativos adicionais.
 
-## MÃ©dio prazo
-
-- Backend de bytecode + interpretador reescrito em cima do IR atual.
-- ExtensÃ£o da gramÃ¡tica para `switch/casus` e `match`.
-- Modo *watch* no CLI (`scriptum check --watch`).
-- GeraÃ§Ã£o de documentaÃ§Ã£o automÃ¡tica a partir da AST (ex.: `scriptum doc`).
+## Médio prazo
+- Implementar IR (`06_ir_codegen.md`) e comando `--emit-ir`.
+- Começar o módulo de codegen / interprete básico (`scriptum run`).
+- Ferramentas de lint (variáveis não utilizadas, importações).
 
 ## Longo prazo
+- Backend de bytecode com otimizador (propagação de constantes, DCE, SSA optional).
+- Servidor LSP com diagnósticos incrementais.
+- Suporte a módulos multi-arquivo e documentação automática (`scriptum doc`).
+- Targets avançados (LLVM/WASM) e integração contínua.
 
-- Servidor LSP (`crates/scriptum-lsp`) com *hover*, *go-to-definition* e diagnÃ³sticos incrementais.
-- Otimizador de IR (propagaÃ§Ã£o constante, DCE, SSA opcional).
-- Backend LLVM/WASM opcional.
-- Sistema de mÃ³dulos multi-arquivo.
-
-SugestÃµes sÃ£o bem-vindas â€” abra uma issue no GitHub com a tag `enhancement` ou participe dos encontros quinzenais do projeto.
+Sugestões continuam bem-vindas — abra uma issue com a tag `enhancement` ou participe das reuniões quinzenais do projeto.
