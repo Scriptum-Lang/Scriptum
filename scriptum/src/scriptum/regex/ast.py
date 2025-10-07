@@ -5,7 +5,7 @@ Regex AST nodes used to build the Scriptum lexical automata.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence, Tuple
 
 
 class RegexNode:
@@ -13,10 +13,28 @@ class RegexNode:
 
 
 @dataclass(slots=True)
+class Empty(RegexNode):
+    """Represents the empty string."""
+
+
+@dataclass(slots=True)
 class Literal(RegexNode):
     """Represents a literal character."""
 
-    value: str
+    value: int  # Unicode code point
+
+
+@dataclass(slots=True)
+class AnyChar(RegexNode):
+    """Matches any character except newline."""
+
+
+@dataclass(slots=True)
+class CharacterClass(RegexNode):
+    """Character class with optional negation."""
+
+    ranges: Sequence[Tuple[int, int]]
+    negated: bool = False
 
 
 @dataclass(slots=True)
@@ -35,8 +53,8 @@ class Alternation(RegexNode):
 
 @dataclass(slots=True)
 class Repeat(RegexNode):
-    """Kleene/star style repetition."""
+    """General repetition."""
 
     node: RegexNode
-    min: int
-    max: Optional[int]
+    minimum: int
+    maximum: Optional[int]

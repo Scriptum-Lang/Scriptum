@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
-import pytest
-
 from scriptum import tokens
 from scriptum.lexer import spec
+from scriptum.regex.builder import AutomataBuilder
 
 
 def test_keywords_are_lowercase_and_unique() -> None:
@@ -15,17 +11,25 @@ def test_keywords_are_lowercase_and_unique() -> None:
         assert keyword == keyword.lower()
 
 
-def test_token_patterns_export_to_json(tmp_path: Path) -> None:
+def test_token_patterns_metadata_consistency() -> None:
     payload = spec.to_json()
     assert payload["keywords"] == list(tokens.KEYWORDS)
     assert payload["version"] == 1
-
-    out_file = tmp_path / "tables.json"
-    out_file.write_text(json.dumps(payload))
-    assert json.loads(out_file.read_text())["token_patterns"][0]["name"]
+    assert all(entry["pattern"] for entry in payload["token_patterns"])
 
 
-@pytest.mark.parametrize("literal", sorted(tokens.all_literals(), key=len, reverse=True))
-def test_literals_present_in_patterns(literal: str) -> None:
-    patterns = {entry.pattern for entry in spec.TOKEN_PATTERNS if entry.kind in (tokens.TokenKind.OPERATOR, tokens.TokenKind.PUNCTUATION, tokens.TokenKind.DELIMITER)}
-    assert literal in {pattern.replace("\\", "") for pattern in patterns}, literal
+def test_automata_builder_generates_accepting_states() -> None:
+    builder = AutomataBuilder()
+    result = builder.build(spec.TOKEN_PATTERNS)
+    assert result.dfa.states, "DFA should contain states"
+    accepting_indices = {state.accepting.index for state in result.dfa.states if state.accepting}
+    assert accepting_indices == set(range(len(spec.TOKEN_PATTERNS)))
+
+
+def test_literal_patterns_present() -> None:
+    literal_patterns = {
+        entry.pattern for entry in spec.TOKEN_PATTERNS if entry.kind in (tokens.TokenKind.OPERATOR, tokens.TokenKind.PUNCTUATION, tokens.TokenKind.DELIMITER)
+    }
+    for literal in tokens.all_literals():
+        escaped = spec.literal_regex(literal)
+        assert escaped in literal_patterns, f"Literal {literal!r} missing from specification"

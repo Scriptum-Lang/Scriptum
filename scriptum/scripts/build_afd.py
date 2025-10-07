@@ -11,18 +11,19 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SRC_ROOT = REPO_ROOT / "scriptum" / "src"
+SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 try:
     from scriptum.lexer import spec
+    from scriptum.regex.builder import AutomataBuilder
 except ImportError as exc:  # pragma: no cover - defensive guard
-    raise SystemExit(f"Failed to import lexer spec: {exc}") from exc
+    raise SystemExit(f"Failed to import build dependencies: {exc}") from exc
 
 
-def _validate_regex(payload: dict[str, Any]) -> None:
-    for entry in payload["token_patterns"]:
+def _validate_regex(patterns: list[dict[str, Any]]) -> None:
+    for entry in patterns:
         try:
             re.compile(entry["pattern"])
         except re.error as exc:  # pragma: no cover - invalid regex
@@ -30,9 +31,40 @@ def _validate_regex(payload: dict[str, Any]) -> None:
 
 
 def build_tables() -> dict[str, Any]:
-    data = spec.to_json()
-    _validate_regex(data)
-    return data
+    base = spec.to_json()
+    _validate_regex(base["token_patterns"])
+
+    builder = AutomataBuilder()
+    result = builder.build(spec.TOKEN_PATTERNS)
+
+    states_payload: list[dict[str, Any]] = []
+    for state_id, state in enumerate(result.dfa.states):
+        transitions = {str(symbol): target for symbol, target in sorted(state.transitions.items())}
+        accepting = None
+        if state.accepting is not None:
+            info = state.accepting
+            accepting = {
+                "token_index": info.index,
+                "name": info.name,
+                "kind": info.kind,
+                "priority": info.priority,
+                "ignore": info.ignore,
+            }
+        states_payload.append(
+            {
+                "id": state_id,
+                "accepting": accepting,
+                "transitions": transitions,
+            }
+        )
+
+    base["dfa"] = {
+        "alphabet": sorted(result.dfa.alphabet()),
+        "start_state": result.dfa.start_state,
+        "states": states_payload,
+    }
+
+    return base
 
 
 def write_tables(path: Path, data: dict[str, Any]) -> None:
@@ -45,7 +77,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=REPO_ROOT / "scriptum" / "src" / "scriptum" / "lexer" / "tables.json",
+        default=REPO_ROOT / "src" / "scriptum" / "lexer" / "tables.json",
         help="Destination file for serialized tables",
     )
     parser.add_argument(
