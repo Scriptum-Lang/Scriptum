@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 
 class Associativity(Enum):
@@ -22,7 +22,7 @@ class PrecedenceRule:
 
 PRECEDENCE_TABLE: Dict[str, PrecedenceRule] = {
     "=": PrecedenceRule(1, Associativity.RIGHT),
-    "?:": PrecedenceRule(2, Associativity.RIGHT),
+    "?": PrecedenceRule(2, Associativity.RIGHT),
     "??": PrecedenceRule(3, Associativity.LEFT),
     "||": PrecedenceRule(4, Associativity.LEFT),
     "&&": PrecedenceRule(5, Associativity.LEFT),
@@ -41,3 +41,12 @@ PRECEDENCE_TABLE: Dict[str, PrecedenceRule] = {
     "%": PrecedenceRule(9, Associativity.LEFT),
     "**": PrecedenceRule(10, Associativity.RIGHT),
 }
+
+
+def binding_powers(operator: str) -> Optional[Tuple[int, int]]:
+    rule = PRECEDENCE_TABLE.get(operator)
+    if rule is None:
+        return None
+    if rule.associativity is Associativity.LEFT:
+        return (rule.precedence, rule.precedence + 1)
+    return (rule.precedence, rule.precedence)

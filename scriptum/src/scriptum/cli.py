@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import json
 import pathlib
-from typing import Optional
+from dataclasses import fields, is_dataclass
+from enum import Enum
+from typing import Any, Optional
 
 import click
 
+from . import tokens
 from .driver import CompilerDriver, Stage
 from .lexer.generator import write_tables
 from .lexer.lexer import LexerConfig, ScriptumLexer
+from .parser.parser import ScriptumParser
 from .text import SourceFile
-from . import tokens
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -46,6 +49,7 @@ def build_lexer_cmd(show: bool) -> None:
 
     tables_path = ScriptumLexer.tables_path()
     tables = write_tables(tables_path)
+    ScriptumLexer._TABLES_CACHE = None
     click.echo(f"Lexer tables written to {tables_path}")
     if show:
         click.echo(json.dumps(tables, indent=2, ensure_ascii=False))
@@ -68,6 +72,44 @@ def lex_cmd(source: pathlib.Path, no_skip_whitespace: bool) -> None:
             continue
         value_repr = "" if token.value in (None, token.lexeme) else f" value={token.value!r}"
         click.echo(f"{token.kind.name:16} {token.lexeme!r}{value_repr}")
+
+
+@cli.command("parse")
+@click.argument(
+    "source",
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+)
+@click.option("--dump-ast", is_flag=True, help="Print the parsed AST as JSON")
+def parse_cmd(source: pathlib.Path, dump_ast: bool) -> None:
+    """Parse a Scriptum source file and optionally dump the AST."""
+
+    text_data = source.read_text(encoding="utf8")
+    parser = ScriptumParser()
+    module = parser.parse(SourceFile(str(source), text_data))
+    if dump_ast:
+        click.echo(json.dumps(_ast_to_dict(module), indent=2, ensure_ascii=False))
+    else:
+        click.echo(f"Parsed {source}")
+
+
+def _ast_to_dict(value: Any) -> Any:
+    """Convert AST dataclasses into a JSON-serialisable structure."""
+
+    if is_dataclass(value):
+        result = {"__type__": value.__class__.__name__}
+        for field in fields(value):
+            result[field.name] = _ast_to_dict(getattr(value, field.name))
+        return result
+    if isinstance(value, Enum):
+        return value.name
+    if isinstance(value, (list, tuple, set)):
+        return [_ast_to_dict(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _ast_to_dict(val) for key, val in value.items()}
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    # Fallback for types like Span; rely on their repr for now.
+    return repr(value)
 
 
 def main() -> None:
