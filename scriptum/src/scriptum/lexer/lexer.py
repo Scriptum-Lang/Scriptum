@@ -73,8 +73,6 @@ class ScriptumLexer:
             if accept.ignore and self.config.skip_whitespace:
                 continue
 
-            kind = tokens.TokenKind[accept.kind.name] if isinstance(accept.kind, tokens.TokenKind) else accept.kind
-            # accept.kind already TokenKind due to conversion, but fallback maintained.
             kind = accept.kind
 
             if kind is tokens.TokenKind.IDENTIFIER and tokens.is_keyword(lexeme):
@@ -119,8 +117,8 @@ class ScriptumLexer:
         state_id = self._tables.start_state
         state = states[state_id]
         index = start_pos
-        last_accept: Optional[AcceptEntry] = None
-        last_index = start_pos
+        best_accept: Optional[AcceptEntry] = state.accepting
+        best_index = start_pos if state.accepting is None else start_pos
         length = len(text_data)
 
         while index < length:
@@ -131,12 +129,15 @@ class ScriptumLexer:
             state = states[next_state_id]
             index += 1
             if state.accepting is not None:
-                last_accept = state.accepting
-                last_index = index
+                if best_accept is None or index > best_index or (
+                    index == best_index and state.accepting.priority > best_accept.priority
+                ):
+                    best_accept = state.accepting
+                    best_index = index
 
-        if last_accept is None:
+        if best_accept is None:
             return None
-        return last_accept, last_index
+        return best_accept, best_index
 
     def _compute_value(self, kind: tokens.TokenKind, lexeme: str):
         if kind is tokens.TokenKind.NUMBER_LITERAL:
@@ -176,7 +177,9 @@ class ScriptumLexer:
             try:
                 data = json.loads(path.read_text(encoding="utf8"))
             except FileNotFoundError as exc:
-                raise errors.CompilerInternalError(f"Lexer tables missing at {path}") from exc
+                raise errors.CompilerInternalError(
+                    f"Lexer tables missing at {path}. Execute 'scriptum build-lexer' to generate them."
+                ) from exc
             cls._TABLES_CACHE = cls._parse_tables(data)
         return cls._TABLES_CACHE
 
@@ -186,19 +189,44 @@ class ScriptumLexer:
 
     @staticmethod
     def _parse_tables(data: dict) -> LexerTables:
-        states_payload = []
-        for state_entry in data["dfa"]["states"]:
-            transitions = {int(symbol): target for symbol, target in state_entry["transitions"].items()}
-            accepting_entry = state_entry.get("accepting")
+        states_payload: list[DFAState] = []
+        trans = data.get("trans", {})
+        finals = {str(state) for state in data.get("finals", [])}
+        labels = data.get("final_token_labels", {})
+        priorities = data.get("final_token_priority", {})
+        ignores = data.get("final_token_ignore", {})
+        kinds = data.get("final_token_kind", {})
+        indices = data.get("final_token_index", {})
+
+        for state in data.get("states", []):
+            state_key = str(state)
+            transitions: dict[int, int] = {}
+            for symbol, target in trans.get(state_key, {}).items():
+                transitions[_symbol_to_code(symbol)] = int(target)
+
             accepting = None
-            if accepting_entry is not None:
-                kind = tokens.TokenKind[accepting_entry["kind"]]
+            if state_key in finals:
+                kind_name = kinds.get(state_key, "IDENTIFIER")
+                try:
+                    kind = tokens.TokenKind[kind_name]
+                except KeyError:
+                    kind = tokens.TokenKind.IDENTIFIER
                 accepting = AcceptEntry(
-                    index=accepting_entry["token_index"],
-                    name=accepting_entry["name"],
+                    index=int(indices.get(state_key, 0)),
+                    name=labels.get(state_key, ""),
                     kind=kind,
-                    priority=accepting_entry["priority"],
-                    ignore=accepting_entry["ignore"],
+                    priority=int(priorities.get(state_key, 0)),
+                    ignore=bool(ignores.get(state_key, False)),
                 )
+
             states_payload.append(DFAState(transitions=transitions, accepting=accepting))
-        return LexerTables(start_state=data["dfa"]["start_state"], states=states_payload)
+
+        return LexerTables(start_state=int(data.get("start", 0)), states=states_payload)
+
+
+def _symbol_to_code(symbol: str) -> int:
+    if symbol.startswith("\\x") and len(symbol) == 4:
+        return int(symbol[2:], 16)
+    if symbol:
+        return ord(symbol[0])
+    raise ValueError("Invalid symbol representation in DFA table.")

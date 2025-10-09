@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import pathlib
+import subprocess
+import sys
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from typing import Any, Optional
@@ -12,7 +14,6 @@ import click
 
 from . import __version__, tokens
 from .driver import CompilerDriver, Stage
-from .lexer.generator import write_tables
 from .lexer.lexer import LexerConfig, ScriptumLexer
 from .parser.parser import ScriptumParser
 from .text import SourceFile
@@ -49,16 +50,14 @@ def compile_cmd(source: Optional[pathlib.Path], stage: str) -> None:
 
 
 @cli.command("build-lexer")
-@click.option("--show", is_flag=True, help="Print the generated tables to stdout")
-def build_lexer_cmd(show: bool) -> None:
-    """Regenerate the lexer DFA tables."""
+def build_lexer_cmd() -> None:
+    """Gera tables.json e docs/diagramas/afd_final.md a partir das ERs."""
 
-    tables_path = ScriptumLexer.tables_path()
-    tables = write_tables(tables_path)
+    root = pathlib.Path(__file__).resolve().parents[2]
+    script = root / "scripts" / "build_afd.py"
+    subprocess.check_call([sys.executable, str(script)])
     ScriptumLexer._TABLES_CACHE = None
-    click.echo(f"Lexer tables written to {tables_path}")
-    if show:
-        click.echo(json.dumps(tables, indent=2, ensure_ascii=False))
+    click.echo("AFD gerado com sucesso.")
 
 
 @cli.command("lex")

@@ -174,3 +174,9 @@ def to_json() -> dict:
         "keywords": list(tokens.KEYWORDS),
         "token_patterns": [pattern.as_json() for pattern in TOKEN_PATTERNS],
     }
+
+
+TOKEN_SPECS = [
+    (pattern.name, pattern.pattern, pattern.priority, pattern.ignore, pattern.kind.name)
+    for pattern in TOKEN_PATTERNS
+]
