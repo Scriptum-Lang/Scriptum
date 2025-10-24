@@ -1,0 +1,6 @@
+// ERROR: T200
+functio main() -> numerus {
+    constans numerus resposta = 42;
+    resposta = "texto";
+    redde resposta;
+}

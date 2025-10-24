@@ -235,7 +235,7 @@ class Interpreter:
             iterable_value = self._evaluate_expression(stmt.iterable, env)
             elements = list(self._ensure_iterable(iterable_value))
             loop_env = Environment(parent=env)
-            loop_env.declare(stmt.target.name, None, mutable=stmt.target.mutable)
+            loop_env.declare(stmt.target.name, None, mutable=True)
             for element in elements:
                 loop_env.assign(stmt.target.name, element)
                 iteration_env = Environment(parent=loop_env)

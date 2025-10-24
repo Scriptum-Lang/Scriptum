@@ -43,10 +43,12 @@ Embora o driver ainda nao exponha o *build* automatico, o repositorio inclui o p
   - Converte anotacoes de tipo em objetos `Type` (`sema/types.py`) e valida atribuicoes, retornos e uso de identificadores.
   - Acumula `SemanticDiagnostic` com mensagens e spans quando encontra erros.
 
-## 6. IR e geracao de codigo
+## 6. IR, pretty-printer e execução
 
-- A camada de IR/Codegen ainda eh um *stub*: `codegen/emitter.py` e modulos relacionados definem a interface a ser preenchida.
-- O `CompilerDriver` ainda levanta `CompilerNotImplemented` para as fases IR e Codegen; a documentacao deve ser atualizada conforme os modulos forem implementados.
+- `ir/lowering.py` converte `nodes.Module` em `ModuleIr`, preservando spans e estrutura.
+- `codegen/generate.py` garante o lowering (quando necessário) e chama `codegen/emitter.py`, produzindo `formatted` + `ModuleIr`.
+- `ir/interpreter.py` executa o IR resultante (mini VM). O comando `scriptum run` percorre lex/parse/sema/IR e chama o interpretador, retornando o valor de `main()`.
+- `scriptum fmt` usa o mesmo pipeline até o IR e grava o código formatado somente quando há mudanças.
 
 ## 7. Resumo do pipeline
 
@@ -54,7 +56,8 @@ Embora o driver ainda nao exponha o *build* automatico, o repositorio inclui o p
 SourceFile -> Lexer (DFA tables) -> Tokens
           -> Parser (Pratt + descida) -> AST (nodes.Module)
           -> SemanticAnalyzer -> Diagnostics + tipos decorados
-          -> [IR / Codegen - pendente]
+          -> IR lowering -> ModuleIr
+          -> Codegen (pretty-printer) / Interpreter (scriptum run)
 ```
 
 Use esta visao como guia ao navegar pelo repositorio ou implementar novas features. Cada etapa publica APIs claras para facilitar testes isolados.
