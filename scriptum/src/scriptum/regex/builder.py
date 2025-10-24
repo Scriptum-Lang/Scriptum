@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Iterable, Sequence, Set, Tuple
+import time
 
 from . import dfa, nfa, parser
 
@@ -34,15 +35,36 @@ class BuildOutput:
 class AutomataBuilder:
     """Transforms regular expressions into deterministic, minimised automata."""
 
-    def __init__(self, alphabet_size: int = nfa.ASCII_LIMIT) -> None:
+    def __init__(
+        self,
+        alphabet_size: int = nfa.ASCII_LIMIT,
+        *,
+        max_alphabet_size: int = 1024,
+        max_states: int = 20000,
+        timeout_seconds: float = 5.0,
+    ) -> None:
         self.alphabet_size = alphabet_size
         self._parser = parser.RegexParser(alphabet_size)
+        self.max_alphabet_size = max_alphabet_size
+        self.max_states = max_states
+        self.timeout_seconds = timeout_seconds
 
     def build(self, patterns: Sequence) -> BuildOutput:
+        start = time.monotonic()
+
+        def check_time() -> None:
+            if self.timeout_seconds is None:
+                return
+            if self.timeout_seconds <= 0:
+                raise TimeoutError("Regex build exceeded time limit.")
+            if time.monotonic() - start > self.timeout_seconds:
+                raise TimeoutError("Regex build exceeded time limit.")
+
         thompson = nfa.ThompsonBuilder(self.alphabet_size)
         accept_entries: list[AcceptInfo] = []
 
         for index, pattern in enumerate(patterns):
+            check_time()
             node = self._parser.parse(pattern.pattern)
             info = AcceptInfo(
                 index=index,
@@ -55,10 +77,23 @@ class AutomataBuilder:
             accept_entries.append(info)
             thompson.add_pattern(node, info)
 
+        if len(thompson.alphabet) > self.max_alphabet_size:
+            raise RuntimeError(
+                f"Regex alphabet too large ({len(thompson.alphabet)} symbols). "
+                f"Limit is {self.max_alphabet_size}."
+            )
+
         machine = thompson.to_nfa()
         deterministic = dfa.determinize(machine)
         deterministic.make_total()
         minimized = deterministic.minimize()
+
+        if len(minimized.states) > self.max_states:
+            raise RuntimeError(
+                f"DFA contains {len(minimized.states)} states, exceeding the limit of {self.max_states}."
+            )
+
+        check_time()
         return BuildOutput(dfa=minimized, alphabet=thompson.alphabet, accept_entries=accept_entries)
 
 

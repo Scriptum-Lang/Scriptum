@@ -32,6 +32,7 @@ class ParseError(errors.CompilerError):
 @dataclass(slots=True)
 class ParserConfig:
     allow_lambda_shortcut: bool = True
+    max_depth: int = 2048
 
 
 class ScriptumParser:
@@ -44,6 +45,7 @@ class ScriptumParser:
         self._index: int = 0
         self._node_counter: int = 0
         self._source: Optional[text.SourceFile] = None
+        self._depth: int = 0
 
     # Public API -----------------------------------------------------------------
 
@@ -272,62 +274,78 @@ class ScriptumParser:
 
     # Expression parsing ---------------------------------------------------------
 
-    def _parse_expression(self, min_bp: int = 0) -> nodes.Expression:
-        expr = self._parse_prefix()
-
-        while True:
-            if self._is_at_end():
-                break
-
-            if self._match_symbol("("):
-                expr = self._finish_call(expr)
-                continue
-            if self._match_symbol("["):
-                expr = self._finish_index(expr)
-                continue
-            if self._match_symbol("."):
-                expr = self._finish_member(expr)
-                continue
-
+    def _enter_depth(self) -> None:
+        self._depth += 1
+        if self._depth > self.config.max_depth:
             token = self._peek()
-            binding = binding_powers(token.lexeme)
-            if binding is None or binding[0] < min_bp:
-                break
+            raise ParseError(
+                f"Parser depth limit exceeded ({self.config.max_depth}). "
+                f"Last token: {token.lexeme!r} at {token.span}."
+            )
 
-            operator_token = self._advance()
-            if operator_token.lexeme == "?":
-                true_expr = self._parse_expression()
-                self._consume_symbol(":", "Expected ':' in conditional expression.")
-                # Allow lower-precedence operators (e.g. assignment) inside the alternate branch.
-                false_min_bp = binding[1] - 1 if binding[1] > 0 else 0
-                false_expr = self._parse_expression(false_min_bp)
-                expr = nodes.ConditionalExpression(
-                    node_id=self._next_id(),
-                    span=self._combine_spans(expr.span, false_expr.span),
-                    condition=expr,
-                    consequent=true_expr,
-                    alternate=false_expr,
-                )
-                continue
+    def _leave_depth(self) -> None:
+        self._depth = max(0, self._depth - 1)
 
-            right = self._parse_expression(binding[1])
-            span = self._combine_spans(expr.span, right.span)
-            if operator_token.lexeme == "=":
-                expr = nodes.AssignmentExpression(
-                    node_id=self._next_id(),
-                    span=span,
-                    target=expr,
-                    value=right,
-                )
-            else:
-                expr = nodes.BinaryExpression(
-                    node_id=self._next_id(),
-                    span=span,
-                    operator=self._binary_operator(operator_token.lexeme),
-                    left=expr,
-                    right=right,
-                )
-        return expr
+    def _parse_expression(self, min_bp: int = 0) -> nodes.Expression:
+        self._enter_depth()
+        try:
+            expr = self._parse_prefix()
+
+            while True:
+                if self._is_at_end():
+                    break
+
+                if self._match_symbol("("):
+                    expr = self._finish_call(expr)
+                    continue
+                if self._match_symbol("["):
+                    expr = self._finish_index(expr)
+                    continue
+                if self._match_symbol("."):
+                    expr = self._finish_member(expr)
+                    continue
+
+                token = self._peek()
+                binding = binding_powers(token.lexeme)
+                if binding is None or binding[0] < min_bp:
+                    break
+
+                operator_token = self._advance()
+                if operator_token.lexeme == "?":
+                    true_expr = self._parse_expression()
+                    self._consume_symbol(":", "Expected ':' in conditional expression.")
+                    # Allow lower-precedence operators (e.g. assignment) inside the alternate branch.
+                    false_min_bp = binding[1] - 1 if binding[1] > 0 else 0
+                    false_expr = self._parse_expression(false_min_bp)
+                    expr = nodes.ConditionalExpression(
+                        node_id=self._next_id(),
+                        span=self._combine_spans(expr.span, false_expr.span),
+                        condition=expr,
+                        consequent=true_expr,
+                        alternate=false_expr,
+                    )
+                    continue
+
+                right = self._parse_expression(binding[1])
+                span = self._combine_spans(expr.span, right.span)
+                if operator_token.lexeme == "=":
+                    expr = nodes.AssignmentExpression(
+                        node_id=self._next_id(),
+                        span=span,
+                        target=expr,
+                        value=right,
+                    )
+                else:
+                    expr = nodes.BinaryExpression(
+                        node_id=self._next_id(),
+                        span=span,
+                        operator=self._binary_operator(operator_token.lexeme),
+                        left=expr,
+                        right=right,
+                    )
+            return expr
+        finally:
+            self._leave_depth()
 
     def _parse_prefix(self) -> nodes.Expression:
         token = self._advance()
