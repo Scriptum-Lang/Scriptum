@@ -298,7 +298,9 @@ class ScriptumParser:
             if operator_token.lexeme == "?":
                 true_expr = self._parse_expression()
                 self._consume_symbol(":", "Expected ':' in conditional expression.")
-                false_expr = self._parse_expression(binding[1])
+                # Allow lower-precedence operators (e.g. assignment) inside the alternate branch.
+                false_min_bp = binding[1] - 1 if binding[1] > 0 else 0
+                false_expr = self._parse_expression(false_min_bp)
                 expr = nodes.ConditionalExpression(
                     node_id=self._next_id(),
                     span=self._combine_spans(expr.span, false_expr.span),
