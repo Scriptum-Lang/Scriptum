@@ -20,10 +20,11 @@ class Symbol:
 class Scope:
     symbols: Dict[str, Symbol] = field(default_factory=dict)
 
-    def declare(self, symbol: Symbol) -> None:
+    def declare(self, symbol: Symbol) -> bool:
         if symbol.name in self.symbols:
-            raise ValueError(f"Symbol already declared: {symbol.name}")
+            return False
         self.symbols[symbol.name] = symbol
+        return True
 
     def lookup(self, name: str) -> Optional[Symbol]:
         return self.symbols.get(name)
@@ -41,8 +42,8 @@ class SymbolTable:
             raise ValueError("Cannot pop global scope")
         self._scopes.pop()
 
-    def declare(self, symbol: Symbol) -> None:
-        self._scopes[-1].declare(symbol)
+    def declare(self, symbol: Symbol) -> bool:
+        return self._scopes[-1].declare(symbol)
 
     def lookup(self, name: str) -> Optional[Symbol]:
         for scope in reversed(self._scopes):
@@ -51,12 +52,15 @@ class SymbolTable:
                 return symbol
         return None
 
-    def assign(self, name: str, value_type: Type) -> Optional[str]:
+    def is_declared_in_current_scope(self, name: str) -> bool:
+        return name in self._scopes[-1].symbols
+
+    def assign(self, name: str, value_type: Type) -> Optional[tuple[str, str]]:
         symbol = self.lookup(name)
         if symbol is None:
-            return f"Undeclared identifier '{name}'"
+            return ("S100", f"Undeclared identifier '{name}'")
         if not symbol.mutable:
-            return f"Cannot assign to immutable symbol '{name}'"
+            return ("S120", f"Cannot assign to immutable symbol '{name}'")
         if not symbol.type.is_assignable_from(value_type):
-            return f"Type mismatch: cannot assign {value_type} to {symbol.type}"
+            return ("T200", f"Type mismatch: cannot assign {value_type} to {symbol.type}")
         return None

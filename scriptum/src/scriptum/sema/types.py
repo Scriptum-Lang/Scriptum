@@ -34,18 +34,45 @@ class Type:
             return True
         if self == other:
             return True
-        if self.kind is TypeKind.OPTIONAL and other.kind in {TypeKind.NULLUM, TypeKind.VACUUM}:
+        if self.kind is TypeKind.OPTIONAL:
+            if other.kind in {TypeKind.NULLUM, TypeKind.VACUUM}:
+                return True
+            if self.element:
+                if other.kind is TypeKind.OPTIONAL and other.element:
+                    return self.element.is_assignable_from(other.element)
+                return self.element.is_assignable_from(other)
             return True
         if self.kind is TypeKind.OPTIONAL and other.kind is TypeKind.OPTIONAL:
             return self.element.is_assignable_from(other.element) if self.element and other.element else True
         if self.kind is TypeKind.NUMERUS and other.kind is TypeKind.NUMERUS:
             return True
+        if self.kind is TypeKind.BOOLEANUM and other.kind is TypeKind.BOOLEANUM:
+            return True
+        if self.kind is TypeKind.TEXTUS and other.kind is TypeKind.TEXTUS:
+            return True
+        if self.kind is TypeKind.FUNCTION and other.kind is TypeKind.FUNCTION:
+            if (self.params is None) or (other.params is None):
+                return True
+            if len(self.params) != len(other.params):
+                return False
+            return all(
+                param_self.is_assignable_from(param_other)
+                for param_self, param_other in zip(self.params, other.params)
+            ) and (self.ret is None or other.ret is None or self.ret.is_assignable_from(other.ret))
         return False
 
     def with_optional(self) -> "Type":
         if self.kind is TypeKind.OPTIONAL:
             return self
         return Type(TypeKind.OPTIONAL, element=self)
+
+    def unwrap_optional(self) -> "Type":
+        if self.kind is TypeKind.OPTIONAL and self.element:
+            return self.element
+        return self
+
+    def is_optional(self) -> bool:
+        return self.kind is TypeKind.OPTIONAL
 
     def __str__(self) -> str:
         if self.kind is TypeKind.ARRAY:
@@ -111,3 +138,7 @@ def least_restrictive(types: Iterable[Type]) -> Type:
         else:
             return PRIMITIVE_TYPES["quodlibet"]
     return result or PRIMITIVE_TYPES["quodlibet"]
+
+
+def function_type(param_types: List[Type], return_type: Type) -> Type:
+    return Type(TypeKind.FUNCTION, params=param_types, ret=return_type)
