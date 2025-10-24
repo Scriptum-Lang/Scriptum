@@ -7,6 +7,7 @@ from itertools import zip_longest
 from typing import Dict, List, Optional, Tuple
 
 from ..ast import nodes
+from ..text import Span
 from . import symbols, types
 
 
@@ -14,7 +15,7 @@ from . import symbols, types
 class SemanticDiagnostic:
     code: str
     message: str
-    span: Optional[object]
+    span: Optional[Span]
 
 
 class SemanticAnalyzer:

@@ -38,6 +38,10 @@ def test_cli_sema_reports_diagnostics() -> None:
     assert err_result.exit_code == 1
     diagnostics = json.loads(err_result.output)
     assert diagnostics and diagnostics[0]["code"] == "S100"
+    assert "position" in diagnostics[0]
+    assert diagnostics[0]["position"]["line"] >= 1
+    assert "highlight" in diagnostics[0]
+    assert "^" in diagnostics[0]["highlight"]
 
 
 def test_cli_ir_and_run_commands() -> None:

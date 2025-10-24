@@ -36,6 +36,7 @@ def test_semantics_valid_examples(relative: str) -> None:
 def test_semantics_detects_type_mismatch() -> None:
     diagnostics = _analyze("err/negativos/tipo_incompativel.stm")
     assert any("Type mismatch" in diag.message for diag in diagnostics)
+    assert all(diag.span is not None for diag in diagnostics)
 
 
 def _analyze_snippet(source: str):
@@ -54,6 +55,7 @@ def test_use_before_declaration_reports_s100() -> None:
     )
     codes = {diag.code for diag in diagnostics}
     assert "S100" in codes
+    assert diagnostics[0].span is not None
 
 
 def test_assignment_to_immutable_symbol_reports_s120() -> None:

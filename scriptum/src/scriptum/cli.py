@@ -18,7 +18,7 @@ from .driver import CompilerDriver, Stage
 from .ir import format_module_ir
 from .lexer.lexer import ScriptumLexer
 from .parser.parser import ScriptumParser
-from .text import SourceFile
+from .text import SourceFile, highlight_span, line_col
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -247,6 +247,9 @@ def _diagnostic_to_json(diagnostic, source_text: Optional[str]) -> dict[str, Any
     }
     if span and source_text is not None:
         payload["snippet"] = source_text[span.start : span.end]
+        line, column = line_col(source_text, span)
+        payload["position"] = {"line": line, "column": column}
+        payload["highlight"] = highlight_span(source_text, span)
     return payload
 
 
