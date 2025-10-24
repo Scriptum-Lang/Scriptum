@@ -12,10 +12,11 @@ from typing import Any, Optional
 
 import click
 
-from . import __version__, tokens
+from . import __version__, errors, tokens
 from .codegen import generate
 from .driver import CompilerDriver, Stage
-from .lexer.lexer import LexerConfig, ScriptumLexer
+from .ir import format_module_ir
+from .lexer.lexer import ScriptumLexer
 from .parser.parser import ScriptumParser
 from .text import SourceFile
 
@@ -47,7 +48,16 @@ def compile_cmd(source: Optional[pathlib.Path], stage: str) -> None:
     """Compile a Scriptum source file."""
 
     driver = CompilerDriver()
-    driver.run(source=source, until=Stage(stage))
+    try:
+        driver.run(source=source, until=Stage(stage))
+    except errors.SemanticError as exc:
+        text_data = source.read_text(encoding="utf8") if source else ""
+        payload = [_diagnostic_to_json(diag, text_data) for diag in exc.diagnostics]
+        click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
+        sys.exit(1)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
 
 
 @cli.command("build-lexer")
@@ -66,18 +76,22 @@ def build_lexer_cmd() -> None:
     "source",
     type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
 )
-@click.option("--no-skip-whitespace", is_flag=True, help="Emit whitespace and comment tokens")
-def lex_cmd(source: pathlib.Path, no_skip_whitespace: bool) -> None:
-    """Tokenise a Scriptum source file and print the resulting tokens."""
+def lex_cmd(source: pathlib.Path) -> None:
+    """Tokenise a Scriptum source file and emit JSON."""
 
-    text_data = source.read_text(encoding="utf8")
-    lexer = ScriptumLexer(config=LexerConfig(skip_whitespace=not no_skip_whitespace))
-    stream = lexer.tokenize(SourceFile(str(source), text_data))
-    for token in stream:
-        if token.kind is tokens.TokenKind.EOF:
-            continue
-        value_repr = "" if token.value in (None, token.lexeme) else f" value={token.value!r}"
-        click.echo(f"{token.kind.name:16} {token.lexeme!r}{value_repr}")
+    driver = CompilerDriver()
+    try:
+        result = driver.run(source, until=Stage.LEXER)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
+
+    token_payload = [
+        _token_to_json(token)
+        for token in (result.tokens or [])
+        if token.kind is not tokens.TokenKind.EOF
+    ]
+    click.echo(json.dumps(token_payload, ensure_ascii=False, indent=2))
 
 
 @cli.command("parse")
@@ -85,17 +99,68 @@ def lex_cmd(source: pathlib.Path, no_skip_whitespace: bool) -> None:
     "source",
     type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
 )
-@click.option("--dump-ast", is_flag=True, help="Print the parsed AST as JSON")
-def parse_cmd(source: pathlib.Path, dump_ast: bool) -> None:
-    """Parse a Scriptum source file and optionally dump the AST."""
+def parse_cmd(source: pathlib.Path) -> None:
+    """Parse a Scriptum source file and print the AST as JSON."""
 
+    driver = CompilerDriver()
+    try:
+        result = driver.run(source, until=Stage.PARSER)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
+
+    module = result.ast
+    payload = _ast_to_dict(module) if module is not None else {}
+    click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+@cli.command("sema")
+@click.argument(
+    "source",
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+)
+def sema_cmd(source: pathlib.Path) -> None:
+    """Run semantic analysis and report diagnostics as JSON."""
+
+    driver = CompilerDriver()
     text_data = source.read_text(encoding="utf8")
-    parser = ScriptumParser()
-    module = parser.parse(SourceFile(str(source), text_data))
-    if dump_ast:
-        click.echo(json.dumps(_ast_to_dict(module), indent=2, ensure_ascii=False))
-    else:
-        click.echo(f"Parsed {source}")
+    try:
+        result = driver.run(source, until=Stage.SEMANTIC)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
+
+    diagnostics = result.diagnostics or []
+    payload = [_diagnostic_to_json(diag, text_data) for diag in diagnostics]
+    click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
+    if diagnostics:
+        sys.exit(1)
+
+
+@cli.command("ir")
+@click.argument(
+    "source",
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+)
+def ir_cmd(source: pathlib.Path) -> None:
+    """Lower a Scriptum source file to IR and print it as JSON."""
+
+    driver = CompilerDriver()
+    try:
+        result = driver.run(source, until=Stage.IR)
+    except errors.SemanticError as exc:
+        text_data = source.read_text(encoding="utf8")
+        payload = [_diagnostic_to_json(diag, text_data) for diag in exc.diagnostics]
+        click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
+        sys.exit(1)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
+
+    if result.ir is None:
+        click.echo("{}")
+        return
+    click.echo(format_module_ir(result.ir))
 
 
 @cli.command("run")
@@ -104,16 +169,23 @@ def parse_cmd(source: pathlib.Path, dump_ast: bool) -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
 )
 def run_cmd(source: pathlib.Path) -> None:
-    """
-    Run a Scriptum program (placeholder).
+    """Interpret a Scriptum program via the IR mini-VM."""
 
-    This command will eventually execute the full compilation pipeline and run
-    the generated program. For now, it simply notifies the feature gap.
-    """
+    driver = CompilerDriver()
+    try:
+        result = driver.run(source, until=Stage.RUN)
+    except errors.SemanticError as exc:
+        text_data = source.read_text(encoding="utf8")
+        payload = [_diagnostic_to_json(diag, text_data) for diag in exc.diagnostics]
+        click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
+        sys.exit(1)
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
 
-    click.echo(
-        f"'scriptum run' is not implemented yet. Parsed {source.name} successfully.",
-    )
+    execution = result.execution
+    value = execution.value if execution else None
+    click.echo(json.dumps(value, ensure_ascii=False))
 
 
 @cli.command("fmt")
@@ -127,28 +199,59 @@ def fmt_cmd(source: Optional[pathlib.Path]) -> None:
     Format Scriptum source code from a file or standard input.
     """
 
+    parser = ScriptumParser()
+
     if source is None:
         text_data = sys.stdin.read()
         if not text_data:
             raise click.UsageError("No input provided on stdin.")
-        path_label = "<stdin>"
-    else:
-        text_data = source.read_text(encoding="utf8")
-        path_label = str(source)
-
-    parser = ScriptumParser()
-    module = parser.parse(SourceFile(path_label, text_data))
-    output = generate(module)
-    formatted = output.formatted
-
-    if source is None:
+        try:
+            module = parser.parse(SourceFile("<stdin>", text_data))
+        except errors.CompilerError as exc:
+            _print_error(exc)
+            sys.exit(1)
+        formatted = generate(module).formatted
         click.echo(formatted, nl=False)
+        return
+
+    original_text = source.read_text(encoding="utf8")
+    try:
+        module = parser.parse(SourceFile(str(source), original_text))
+    except errors.CompilerError as exc:
+        _print_error(exc)
+        sys.exit(1)
+
+    formatted = generate(module).formatted
+    if original_text != formatted:
+        source.write_text(formatted, encoding="utf8")
+        click.echo(f"Formatted {source}")
     else:
-        if text_data != formatted:
-            source.write_text(formatted, encoding="utf8")
-            click.echo(f"Formatted {source}")
-        else:
-            click.echo(f"{source} already formatted")
+        click.echo(f"{source} already formatted")
+
+
+def _token_to_json(token: tokens.Token) -> dict[str, Any]:
+    return {
+        "kind": token.kind.name,
+        "lexeme": token.lexeme,
+        "value": token.value,
+        "span": [token.span.start, token.span.end],
+    }
+
+
+def _diagnostic_to_json(diagnostic, source_text: Optional[str]) -> dict[str, Any]:
+    span = diagnostic.span if diagnostic.span else None
+    payload = {
+        "code": getattr(diagnostic, "code", ""),
+        "message": diagnostic.message if hasattr(diagnostic, "message") else str(diagnostic),
+        "span": [span.start, span.end] if span else None,
+    }
+    if span and source_text is not None:
+        payload["snippet"] = source_text[span.start : span.end]
+    return payload
+
+
+def _print_error(exc: Exception) -> None:
+    click.echo(str(exc), err=True)
 
 
 def _ast_to_dict(value: Any) -> Any:

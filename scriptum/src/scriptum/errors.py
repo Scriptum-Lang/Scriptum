@@ -33,3 +33,15 @@ class LexerError(CompilerError):
 
 
 from .text import Span  # noqa: E402  (late import to avoid circular dependency)
+
+
+class SemanticError(CompilerError):
+    """Raised when semantic analysis reports diagnostics."""
+
+    def __init__(self, diagnostics: list) -> None:
+        super().__init__("Semantic analysis failed.")
+        self.diagnostics = diagnostics
+
+
+class ExecutionError(CompilerError):
+    """Raised when executing Scriptum IR fails."""

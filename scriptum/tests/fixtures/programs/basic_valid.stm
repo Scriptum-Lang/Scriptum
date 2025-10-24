@@ -1,0 +1,7 @@
+constans numerus base = 1;
+
+functio main() -> numerus {
+    mutabilis numerus total = base + 2;
+    redde total;
+}
+

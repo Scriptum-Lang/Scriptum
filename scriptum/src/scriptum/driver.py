@@ -13,7 +13,13 @@ import pathlib
 from dataclasses import dataclass
 from typing import Optional
 
-from . import errors, text
+from . import errors, text, tokens
+from .codegen import generate
+from .ir import ModuleIr, lower_module
+from .ir.interpreter import ExecutionResult, Interpreter
+from .lexer.lexer import LexerConfig, ScriptumLexer
+from .parser.parser import ScriptumParser
+from .sema.analyzer import SemanticAnalyzer, SemanticDiagnostic
 
 
 class Stage(enum.Enum):
@@ -24,6 +30,8 @@ class Stage(enum.Enum):
     SEMANTIC = "semantic"
     IR = "ir"
     CODEGEN = "codegen"
+    FMT = "fmt"
+    RUN = "run"
 
 
 @dataclass(slots=True)
@@ -38,8 +46,20 @@ class CompilerDriver:
 
     def __init__(self, config: Optional[DriverConfig] = None) -> None:
         self.config = config or DriverConfig()
+        self._lexer = ScriptumLexer(LexerConfig())
+        self._parser = ScriptumParser()
 
-    def run(self, source: Optional[pathlib.Path], until: Optional[Stage] = None) -> None:
+    @dataclass(slots=True)
+    class Result:
+        source: text.SourceFile
+        tokens: Optional[list[tokens.Token]] = None
+        ast: Optional["nodes.Module"] = None  # type: ignore[name-defined]
+        diagnostics: Optional[list[SemanticDiagnostic]] = None
+        ir: Optional[ModuleIr] = None
+        formatted: Optional[str] = None
+        execution: Optional[ExecutionResult] = None
+
+    def run(self, source: Optional[pathlib.Path], until: Optional[Stage] = None) -> "CompilerDriver.Result":
         """
         Run the compilation pipeline on *source* until the requested stage.
 
@@ -54,21 +74,40 @@ class CompilerDriver:
 
         target_stage = until or self.config.until
         source_text = self._read_source(source)
-        module = text.SourceFile(path=source, text=source_text)
+        source_file = text.SourceFile(path=str(source) if source else "<stdin>", text=source_text)
 
-        # The following calls are placeholders to be filled as the respective
-        # modules become available. They intentionally raise to surface the
-        # missing implementation clearly during early development.
+        result = CompilerDriver.Result(source=source_file)
+
+        result.tokens = self.lex(source_file)
         if target_stage == Stage.LEXER:
-            raise errors.CompilerNotImplemented("Lexer pipeline not yet implemented.")
-        if target_stage == Stage.PARSER:
-            raise errors.CompilerNotImplemented("Parser pipeline not yet implemented.")
-        if target_stage == Stage.SEMANTIC:
-            raise errors.CompilerNotImplemented("Semantic analysis not yet implemented.")
-        if target_stage == Stage.IR:
-            raise errors.CompilerNotImplemented("IR lowering not yet implemented.")
+            return result
 
-        raise errors.CompilerNotImplemented("Code generation not yet implemented.")
+        result.ast = self.parse(source_file)
+        if target_stage == Stage.PARSER:
+            return result
+
+        diagnostics = self.analyze(result.ast)
+        result.diagnostics = diagnostics
+        if target_stage == Stage.SEMANTIC:
+            return result
+        if diagnostics:
+            raise errors.SemanticError(diagnostics)
+
+        result.ir = lower_module(result.ast)
+        if target_stage == Stage.IR:
+            return result
+
+        formatted_output = generate(result.ir)
+        result.formatted = formatted_output.formatted
+        if target_stage in {Stage.CODEGEN, Stage.FMT}:
+            return result
+
+        interpreter = Interpreter(result.ir)
+        result.execution = interpreter.execute()
+        if target_stage == Stage.RUN:
+            return result
+
+        return result
 
     @staticmethod
     def _read_source(source: Optional[pathlib.Path]) -> str:
@@ -85,3 +124,13 @@ class CompilerDriver:
             raise errors.CompilerInputError(f"Source file not found: {source}") from exc
         except OSError as exc:
             raise errors.CompilerInputError(f"Unable to read source file: {source}") from exc
+
+    def lex(self, source: text.SourceFile) -> list[tokens.Token]:
+        return self._lexer.tokenize(source)
+
+    def parse(self, source: text.SourceFile):
+        return self._parser.parse(source)
+
+    def analyze(self, module):
+        analyzer = SemanticAnalyzer()
+        return analyzer.analyze(module)
