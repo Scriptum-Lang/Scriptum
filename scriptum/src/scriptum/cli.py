@@ -13,6 +13,7 @@ from typing import Any, Optional
 import click
 
 from . import __version__, tokens
+from .codegen import generate
 from .driver import CompilerDriver, Stage
 from .lexer.lexer import LexerConfig, ScriptumLexer
 from .parser.parser import ScriptumParser
@@ -113,6 +114,41 @@ def run_cmd(source: pathlib.Path) -> None:
     click.echo(
         f"'scriptum run' is not implemented yet. Parsed {source.name} successfully.",
     )
+
+
+@cli.command("fmt")
+@click.argument(
+    "source",
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    required=False,
+)
+def fmt_cmd(source: Optional[pathlib.Path]) -> None:
+    """
+    Format Scriptum source code from a file or standard input.
+    """
+
+    if source is None:
+        text_data = sys.stdin.read()
+        if not text_data:
+            raise click.UsageError("No input provided on stdin.")
+        path_label = "<stdin>"
+    else:
+        text_data = source.read_text(encoding="utf8")
+        path_label = str(source)
+
+    parser = ScriptumParser()
+    module = parser.parse(SourceFile(path_label, text_data))
+    output = generate(module)
+    formatted = output.formatted
+
+    if source is None:
+        click.echo(formatted, nl=False)
+    else:
+        if text_data != formatted:
+            source.write_text(formatted, encoding="utf8")
+            click.echo(f"Formatted {source}")
+        else:
+            click.echo(f"{source} already formatted")
 
 
 def _ast_to_dict(value: Any) -> Any:

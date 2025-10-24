@@ -1,0 +1,7 @@
+constans numerus base=10;
+functio transformar(valores){mutabilis numerus soma=0;
+pro item in valores {soma=soma+item;}
+mutabilis textus status=structura{texto:"ok"}.texto;
+mutabilis numerus primeiro=[1,2,3][0];
+mutabilis quodlibet mapper=functio(x)=>x ? x : soma;
+redde mapper(soma);}
