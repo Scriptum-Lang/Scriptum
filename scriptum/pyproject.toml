@@ -18,6 +18,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
+    "black>=24.0",
+    "ruff>=0.5",
 ]
 
 [project.scripts]
@@ -29,3 +31,12 @@ package-dir = { "" = "scriptum/src" }
 [tool.setuptools.packages.find]
 where = ["scriptum/src"]
 exclude = ["tests", "tests.*"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+select = ["E", "F", "I"]
