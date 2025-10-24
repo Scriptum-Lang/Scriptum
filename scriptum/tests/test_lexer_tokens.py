@@ -84,3 +84,40 @@ def test_err_example_contains_string_literal_value() -> None:
     string_tokens = [tok for tok in tokens_out if tok.kind is tokens.TokenKind.STRING_LITERAL]
     assert string_tokens
     assert string_tokens[0].value == "texto"
+
+
+def _tokenize_inline(text: str) -> list[tokens.Token]:
+    lexer = ScriptumLexer()
+    tokens_out = lexer.tokenize(SourceFile(None, text))
+    return [tok for tok in tokens_out if tok.kind is not tokens.TokenKind.EOF]
+
+
+def test_power_operator_is_lexed_as_single_token() -> None:
+    tokens_out = _tokenize_inline("a ** b ** c")
+    operators = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.OPERATOR]
+    assert operators == ["**", "**"]
+
+
+def test_logical_and_comparison_operators() -> None:
+    snippet = "a ?? b ?: c || d && e == f != g === h !== i > j >= k < l <= m"
+    tokens_out = _tokenize_inline(snippet)
+    operator_tokens = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.OPERATOR]
+    assert operator_tokens == ["??", "?:", "||", "&&", "==", "!=", "===", "!==", ">", ">=", "<", "<="]
+
+
+def test_punctuation_and_delimiters() -> None:
+    snippet = ":: -> => , ; : ? { } [ ] ( ) obj.prop"
+    tokens_out = _tokenize_inline(snippet)
+    punctuation = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.PUNCTUATION]
+    delimiters = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.DELIMITER]
+    dot_tokens = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.OPERATOR and tok.lexeme == "."]
+    assert punctuation == ["::", "->", "=>", ",", ";", ":", "?"]
+    assert delimiters == ["{", "}", "[", "]", "(", ")"]
+    assert dot_tokens == ["."]
+
+
+def test_line_and_block_comments_are_ignored() -> None:
+    snippet = "mutabilis numerus a = 1 // linha\nperge = 2; /* bloco */"
+    tokens_out = _tokenize_inline(snippet)
+    assert all(tok.kind is not tokens.TokenKind.COMMENT for tok in tokens_out)
+    assert [tok.lexeme for tok in tokens_out] == ["mutabilis", "numerus", "a", "=", "1", "perge", "=", "2", ";"]

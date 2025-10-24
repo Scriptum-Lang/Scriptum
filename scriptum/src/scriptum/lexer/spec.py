@@ -120,7 +120,19 @@ TOKEN_PATTERNS: List[TokenPattern] = [
 
 # Literal tokens (operators first by length, then punctuation, then delimiters).
 
-for literal in sorted(tokens.OPERATORS, key=lambda lit: (-len(lit), lit)):
+_OPERATOR_ORDER = {literal: index for index, literal in enumerate(tokens.OPERATORS)}
+_PUNCTUATION_ORDER = {literal: index for index, literal in enumerate(tokens.PUNCTUATION)}
+_DELIMITER_ORDER = {literal: index for index, literal in enumerate(tokens.DELIMITERS)}
+
+
+def _literal_sort_key(order: dict[str, int]):
+    def key(literal: str) -> tuple[int, int, str]:
+        return (-len(literal), order[literal], literal)
+
+    return key
+
+
+for literal in sorted(tokens.OPERATORS, key=_literal_sort_key(_OPERATOR_ORDER)):
     TOKEN_PATTERNS.append(
         TokenPattern(
             name=literal_name("OP", literal),
@@ -130,7 +142,7 @@ for literal in sorted(tokens.OPERATORS, key=lambda lit: (-len(lit), lit)):
         )
     )
 
-for literal in sorted(tokens.PUNCTUATION, key=lambda lit: (-len(lit), lit)):
+for literal in sorted(tokens.PUNCTUATION, key=_literal_sort_key(_PUNCTUATION_ORDER)):
     TOKEN_PATTERNS.append(
         TokenPattern(
             name=literal_name("PUNC", literal),
@@ -140,7 +152,7 @@ for literal in sorted(tokens.PUNCTUATION, key=lambda lit: (-len(lit), lit)):
         )
     )
 
-for literal in sorted(tokens.DELIMITERS, key=lambda lit: (-len(lit), lit)):
+for literal in sorted(tokens.DELIMITERS, key=_literal_sort_key(_DELIMITER_ORDER)):
     TOKEN_PATTERNS.append(
         TokenPattern(
             name=literal_name("DELIM", literal),

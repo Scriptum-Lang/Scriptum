@@ -23,3 +23,10 @@ def test_unterminated_string_literal() -> None:
     program = 'mutabilis numerus a = "unterminated'
     with pytest.raises(errors.LexerError):
         lexer.tokenize(_source(program))
+
+
+def test_unterminated_block_comment() -> None:
+    lexer = ScriptumLexer()
+    program = "mutabilis numerus a = 1 /* comentario sem fim"
+    with pytest.raises(errors.LexerError):
+        lexer.tokenize(_source(program))

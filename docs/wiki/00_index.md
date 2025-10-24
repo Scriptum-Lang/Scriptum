@@ -1,50 +1,56 @@
 # Scriptum Wiki
 
-Bem-vindo ao hub de documentação oficial da linguagem **Scriptum** (`.stm`). Aqui você encontra a visão geral do projeto, as especificações formais e as diretrizes de contribuição.
+Bem-vindo ao hub de documentacao oficial da linguagem **Scriptum** (`.stm`). Aqui voce encontra a visao geral do projeto, as especificacoes formais e as diretrizes de contribuicao.
 
-## Conteúdo principal
+## Conteudo principal
 
-1. [Gramática e sintaxe](01_gramatica.md)
-2. [Léxico e tokens](02_lexico.md)
+1. [Gramatica e sintaxe](01_gramatica.md)
+2. [Lexico e tokens](02_lexico.md)
 3. [Arquitetura do parser](03_parser.md)
-4. [Árvore de Sintaxe Abstrata (AST)](04_ast.md)
-5. [Tipos e análise semântica](05_tipos_semantica.md)
+4. [Arvore de Sintaxe Abstrata (AST)](04_ast.md)
+5. [Tipos e analise semantica](05_tipos_semantica.md)
 6. [IR, codegen e pipeline de build](06_ir_codegen.md)
-7. [Roadmap e evoluções](99_roadmap.md)
+7. [Fluxo completo do compilador](07_fluxo_compilador.md)
+8. [Pipeline do lexer](08_lexer_pipeline.md)
+9. [Parser e AST passo a passo](09_parser_ast_pipeline.md)
+10. [Analise semantica passo a passo](10_semantica_pipeline.md)
+11. [AFN e AFD no lexer](11_afn_afd.md)
+12. [Roadmap e evolucoes](99_roadmap.md)
 
-## Arquitetura do repositório
+## Estrutura do repositorio
 
 ```
 .
-├─ Cargo.toml (workspace)
-├─ crates/
-│  ├─ scriptum-ast
-│  ├─ scriptum-lexer
-│  ├─ scriptum-parser
-│  ├─ scriptum-types
-│  ├─ scriptum-ir
-│  ├─ scriptum-codegen
-│  └─ scriptum-cli
-├─ docs/
-│  ├─ wiki/
-│  └─ diagrams/
-├─ examples/
-├─ scripts/
-└─ README.md
+|- docs/
+|  |- wiki/
+|- examples/
+|- scriptum/
+|  |- pyproject.toml
+|  |- README.md
+|  |- scripts/
+|  |- src/scriptum/
+|  |  |- ast/
+|  |  |- codegen/
+|  |  |- lexer/
+|  |  |- parser/
+|  |  |- regex/
+|  |  |- sema/
+|  |  |- text.py
+|  |  |- tokens.py
+|  |  |- driver.py
+|  |- tests/
+|- LICENSE
 ```
 
-Cada crate é autocontida, livre de dependências cíclicas e integrada via Cargo workspace. O CLI (`scriptum`) opera como entrypoint para lex, parse, AST, check, build e fmt.
+## Convenicoes de contribuicao
 
-## Convenções de contribuição
+- Utilize Python 3.11+ com `ruff`, `black` e `pytest` antes de enviar PRs (scripts auxiliares estao em `scriptum/scripts/`).
+- Atualize a documentacao quando alterar gramaticas, tokens ou fases do compilador. Mudancas no lexer devem refletir ajustes em `docs/wiki/08_lexer_pipeline.md`, por exemplo.
+- Diagnosticos devem citar `Span` e, quando possivel, incluir codigo de erro previsivel.
+- Testes unitarios ficam proximos dos modulos em `scriptum/tests`.
 
-- **Rust 2021+** e `#![forbid(unsafe_code)]` em todas as crates.
-- Use `cargo fmt`, `cargo clippy --deny warnings` e `cargo test --workspace` antes de enviar PRs (existe um script auxiliar em `scripts/dev_commit.sh`).
-- Atualize a documentação quando alterar a gramática, AST ou fases do compilador. Cada mudança sintática deve refletir ajustes em `docs/wiki/01_gramatica.md` e `docs/wiki/02_lexico.md`.
-- Diagnósticos devem citar spans (`scriptum_utils::Span`) e, quando possível, conter código de erro (`Txxx`, `Sxxx`).
-- Tests unitários ficam em cada crate; testes integrados e *golden tests* usam `examples/`.
+## Documentacao legada
 
-## Documentação legada
+Materiais de versoes anteriores estao em [`docs/wiki/legacy/`](legacy/). Consulte-os apenas como referencia historica; o conteudo desta wiki tem prioridade.
 
-Materiais de versões anteriores (AFDs manuais, protótipos antigos etc.) foram movidos para [`docs/wiki/legacy/`](legacy/). Consulte-os apenas como referência histórica; o conteúdo desta wiki tem prioridade.
-
-Boa leitura e bons commits! ☕️
+Boa leitura e bons commits!
