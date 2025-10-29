@@ -1,0 +1,6 @@
+# Streams, buffers e estruturas de dados do Lexer
+
+- **Principio do match mais longo** - [scriptum/src/scriptum/lexer/lexer.py#L120](../../scriptum/src/scriptum/lexer/lexer.py#L120): o metodo `_match_token` percorre a DFA mantendo o ultimo estado de aceitacao valido para devolver sempre o lexema mais longo (desempate pela prioridade do padrao).
+- **Estrutura do token** - [scriptum/src/scriptum/tokens.py#L17](../../scriptum/src/scriptum/tokens.py#L17) e [scriptum/src/scriptum/tokens.py#L90](../../scriptum/src/scriptum/tokens.py#L90): o enum `TokenKind` concentra as classes lexicas e o dataclass `Token` agrega `lexeme`, `span`, `value` e metadados consumidos pelas etapas seguintes.
+- **Bufferizacao** - [scriptum/src/scriptum/lexer/lexer.py#L54](../../scriptum/src/scriptum/lexer/lexer.py#L54): `ScriptumLexer.tokenize` le `text_data` como buffer unico, avanca `position` enquanto acumula tokens em `result` e encerra com o marcador `EOF`.
+- **Integracao com analise sintatica** - [scriptum/src/scriptum/parser/parser.py#L43](../../scriptum/src/scriptum/parser/parser.py#L43) e [scriptum/src/scriptum/parser/parser.py#L54](../../scriptum/src/scriptum/parser/parser.py#L54): `ScriptumParser` instancia `ScriptumLexer` e consome `_tokens` tokenizados antes de iniciar o parsing.
