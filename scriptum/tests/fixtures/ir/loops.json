@@ -1,0 +1,233 @@
+{
+  "kind": "ModuleIr",
+  "span": [
+    0,
+    296
+  ],
+  "globals": [
+    {
+      "kind": "IrVariable",
+      "span": [
+        0,
+        31
+      ],
+      "name": "contador",
+      "mutable": true,
+      "type_annotation": "numerus",
+      "initializer": {
+        "kind": "IrLiteral",
+        "span": [
+          29,
+          30
+        ],
+        "value": 0,
+        "raw": "0"
+      }
+    }
+  ],
+  "functions": [
+    {
+      "kind": "IrFunction",
+      "span": [
+        33,
+        295
+      ],
+      "name": "atualizar",
+      "parameters": [
+        {
+          "kind": "IrParameter",
+          "span": [
+            51,
+            58
+          ],
+          "name": "limite",
+          "type_annotation": "numerus",
+          "default_value": null
+        }
+      ],
+      "return_annotation": "numerus",
+      "body": [
+        {
+          "kind": "IrVariableDeclaration",
+          "span": [
+            84,
+            112
+          ],
+          "name": "total",
+          "mutable": true,
+          "type_annotation": "numerus",
+          "initializer": {
+            "kind": "IrLiteral",
+            "span": [
+              110,
+              111
+            ],
+            "value": 0,
+            "raw": "0"
+          }
+        },
+        {
+          "kind": "IrWhile",
+          "span": [
+            117,
+            271
+          ],
+          "condition": {
+            "kind": "IrBinary",
+            "span": [
+              121,
+              137
+            ],
+            "operator": "LT",
+            "left": {
+              "kind": "IrIdentifier",
+              "span": [
+                122,
+                127
+              ],
+              "name": "total"
+            },
+            "right": {
+              "kind": "IrIdentifier",
+              "span": [
+                130,
+                136
+              ],
+              "name": "limite"
+            }
+          },
+          "body": [
+            {
+              "kind": "IrExpressionStatement",
+              "span": [
+                148,
+                166
+              ],
+              "expression": {
+                "kind": "IrAssignment",
+                "span": [
+                  148,
+                  165
+                ],
+                "target": {
+                  "kind": "IrIdentifier",
+                  "span": [
+                    148,
+                    153
+                  ],
+                  "name": "total"
+                },
+                "value": {
+                  "kind": "IrBinary",
+                  "span": [
+                    156,
+                    165
+                  ],
+                  "operator": "ADD",
+                  "left": {
+                    "kind": "IrIdentifier",
+                    "span": [
+                      156,
+                      161
+                    ],
+                    "name": "total"
+                  },
+                  "right": {
+                    "kind": "IrLiteral",
+                    "span": [
+                      164,
+                      165
+                    ],
+                    "value": 1,
+                    "raw": "1"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "IrIf",
+              "span": [
+                175,
+                265
+              ],
+              "condition": {
+                "kind": "IrBinary",
+                "span": [
+                  178,
+                  195
+                ],
+                "operator": "EQ",
+                "left": {
+                  "kind": "IrIdentifier",
+                  "span": [
+                    179,
+                    184
+                  ],
+                  "name": "total"
+                },
+                "right": {
+                  "kind": "IrIdentifier",
+                  "span": [
+                    188,
+                    194
+                  ],
+                  "name": "limite"
+                }
+              },
+              "then_branch": [
+                {
+                  "kind": "IrBreak",
+                  "span": [
+                    210,
+                    217
+                  ]
+                }
+              ],
+              "else_branch": [
+                {
+                  "kind": "IrContinue",
+                  "span": [
+                    249,
+                    255
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "IrReturn",
+          "span": [
+            276,
+            293
+          ],
+          "value": {
+            "kind": "IrBinary",
+            "span": [
+              282,
+              292
+            ],
+            "operator": "NULLISH",
+            "left": {
+              "kind": "IrIdentifier",
+              "span": [
+                282,
+                287
+              ],
+              "name": "total"
+            },
+            "right": {
+              "kind": "IrLiteral",
+              "span": [
+                291,
+                292
+              ],
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

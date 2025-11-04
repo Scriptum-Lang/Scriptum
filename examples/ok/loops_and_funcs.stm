@@ -1,0 +1,15 @@
+// EXPECT: 15
+functio soma(numerus limite) -> numerus {
+    mutabilis numerus total = 0;
+    mutabilis numerus atual = 0;
+    dum (atual < limite) {
+        atual = atual + 1;
+        total = total + atual;
+    }
+    redde total;
+}
+
+functio main() -> numerus {
+    mutabilis numerus parcial = soma(4);
+    redde parcial + 5;
+}

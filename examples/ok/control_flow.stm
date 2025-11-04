@@ -1,0 +1,22 @@
+// EXPECT: 10
+constans numerus multiplicador = 2;
+
+functio incrementar(numerus valor) -> numerus {
+    redde valor + 1;
+}
+
+functio main() -> numerus {
+    mutabilis numerus total = 0;
+    pro item in [1, 2, 3, 4] {
+        si (item == 4) {
+            frange;
+        }
+        si (item % 2 == 0) {
+            perge;
+        }
+        total = total + incrementar(item);
+    }
+    mutabilis quodlibet dados = structura { texto: "ok", base: 1 };
+    mutabilis numerus primeiro = [1, 2, 3][0];
+    redde total + multiplicador + dados.base + primeiro;
+}

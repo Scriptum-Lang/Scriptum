@@ -1,0 +1,5 @@
+// ERROR: S100
+functio main() -> numerus {
+    mutabilis numerus resultado = valor + 1;
+    redde resultado;
+}

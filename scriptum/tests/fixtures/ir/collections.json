@@ -1,0 +1,345 @@
+{
+  "kind": "ModuleIr",
+  "span": [
+    0,
+    350
+  ],
+  "globals": [
+    {
+      "kind": "IrVariable",
+      "span": [
+        0,
+        27
+      ],
+      "name": "base",
+      "mutable": false,
+      "type_annotation": "numerus",
+      "initializer": {
+        "kind": "IrLiteral",
+        "span": [
+          24,
+          26
+        ],
+        "value": 10,
+        "raw": "10"
+      }
+    }
+  ],
+  "functions": [
+    {
+      "kind": "IrFunction",
+      "span": [
+        29,
+        349
+      ],
+      "name": "transformar",
+      "parameters": [
+        {
+          "kind": "IrParameter",
+          "span": [
+            49,
+            56
+          ],
+          "name": "valores",
+          "type_annotation": null,
+          "default_value": null
+        }
+      ],
+      "return_annotation": null,
+      "body": [
+        {
+          "kind": "IrVariableDeclaration",
+          "span": [
+            64,
+            91
+          ],
+          "name": "soma",
+          "mutable": true,
+          "type_annotation": "numerus",
+          "initializer": {
+            "kind": "IrLiteral",
+            "span": [
+              89,
+              90
+            ],
+            "value": 0,
+            "raw": "0"
+          }
+        },
+        {
+          "kind": "IrForIn",
+          "span": [
+            96,
+            151
+          ],
+          "target": {
+            "kind": "IrForTarget",
+            "span": [
+              100,
+              104
+            ],
+            "name": "item",
+            "mutable": false,
+            "type_annotation": null
+          },
+          "iterable": {
+            "kind": "IrIdentifier",
+            "span": [
+              108,
+              115
+            ],
+            "name": "valores"
+          },
+          "body": [
+            {
+              "kind": "IrExpressionStatement",
+              "span": [
+                126,
+                145
+              ],
+              "expression": {
+                "kind": "IrAssignment",
+                "span": [
+                  126,
+                  144
+                ],
+                "target": {
+                  "kind": "IrIdentifier",
+                  "span": [
+                    126,
+                    130
+                  ],
+                  "name": "soma"
+                },
+                "value": {
+                  "kind": "IrBinary",
+                  "span": [
+                    133,
+                    144
+                  ],
+                  "operator": "ADD",
+                  "left": {
+                    "kind": "IrIdentifier",
+                    "span": [
+                      133,
+                      137
+                    ],
+                    "name": "soma"
+                  },
+                  "right": {
+                    "kind": "IrIdentifier",
+                    "span": [
+                      140,
+                      144
+                    ],
+                    "name": "item"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "kind": "IrVariableDeclaration",
+          "span": [
+            156,
+            214
+          ],
+          "name": "status",
+          "mutable": true,
+          "type_annotation": "textus",
+          "initializer": {
+            "kind": "IrMemberAccess",
+            "span": [
+              182,
+              213
+            ],
+            "object": {
+              "kind": "IrObjectLiteral",
+              "span": [
+                182,
+                207
+              ],
+              "properties": [
+                {
+                  "kind": "IrObjectProperty",
+                  "span": [
+                    194,
+                    205
+                  ],
+                  "key": "texto",
+                  "value": {
+                    "kind": "IrLiteral",
+                    "span": [
+                      201,
+                      205
+                    ],
+                    "value": "ok",
+                    "raw": "\"ok\""
+                  }
+                }
+              ]
+            },
+            "property": "texto"
+          }
+        },
+        {
+          "kind": "IrVariableDeclaration",
+          "span": [
+            219,
+            261
+          ],
+          "name": "primeiro",
+          "mutable": true,
+          "type_annotation": "numerus",
+          "initializer": {
+            "kind": "IrIndex",
+            "span": [
+              248,
+              260
+            ],
+            "collection": {
+              "kind": "IrArrayLiteral",
+              "span": [
+                248,
+                257
+              ],
+              "elements": [
+                {
+                  "kind": "IrLiteral",
+                  "span": [
+                    249,
+                    250
+                  ],
+                  "value": 1,
+                  "raw": "1"
+                },
+                {
+                  "kind": "IrLiteral",
+                  "span": [
+                    252,
+                    253
+                  ],
+                  "value": 2,
+                  "raw": "2"
+                },
+                {
+                  "kind": "IrLiteral",
+                  "span": [
+                    255,
+                    256
+                  ],
+                  "value": 3,
+                  "raw": "3"
+                }
+              ]
+            },
+            "index": {
+              "kind": "IrLiteral",
+              "span": [
+                258,
+                259
+              ],
+              "value": 0,
+              "raw": "0"
+            }
+          }
+        },
+        {
+          "kind": "IrVariableDeclaration",
+          "span": [
+            266,
+            323
+          ],
+          "name": "mapper",
+          "mutable": true,
+          "type_annotation": "quodlibet",
+          "initializer": {
+            "kind": "IrLambda",
+            "span": [
+              295,
+              322
+            ],
+            "parameters": [
+              {
+                "kind": "IrParameter",
+                "span": [
+                  304,
+                  305
+                ],
+                "name": "x",
+                "type_annotation": null,
+                "default_value": null
+              }
+            ],
+            "return_annotation": null,
+            "body_expression": {
+              "kind": "IrConditional",
+              "span": [
+                310,
+                322
+              ],
+              "condition": {
+                "kind": "IrIdentifier",
+                "span": [
+                  310,
+                  311
+                ],
+                "name": "x"
+              },
+              "consequent": {
+                "kind": "IrIdentifier",
+                "span": [
+                  314,
+                  315
+                ],
+                "name": "x"
+              },
+              "alternate": {
+                "kind": "IrIdentifier",
+                "span": [
+                  318,
+                  322
+                ],
+                "name": "soma"
+              }
+            },
+            "body_statements": []
+          }
+        },
+        {
+          "kind": "IrReturn",
+          "span": [
+            328,
+            347
+          ],
+          "value": {
+            "kind": "IrCall",
+            "span": [
+              334,
+              346
+            ],
+            "callee": {
+              "kind": "IrIdentifier",
+              "span": [
+                334,
+                340
+              ],
+              "name": "mapper"
+            },
+            "arguments": [
+              {
+                "kind": "IrIdentifier",
+                "span": [
+                  341,
+                  345
+                ],
+                "name": "soma"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

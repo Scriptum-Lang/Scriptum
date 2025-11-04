@@ -1,0 +1,5 @@
+mutabilis numerus contador=0;
+functio atualizar(numerus limite)->numerus{mutabilis numerus total=0;
+dum(total<limite){total=total+1;
+si(total==limite){frange;}aliter{perge;}}
+redde total ?? 0;}

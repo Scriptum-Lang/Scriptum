@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scriptum"
+version = "0.2.0"
+description = "Compiler for the Scriptum language."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Scriptum Team" }]
+dependencies = [
+    "click>=8.1",
+    "typing-extensions>=4.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "black>=24.0",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+scriptum = "scriptum.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "scriptum/src" }
+
+[tool.setuptools.packages.find]
+where = ["scriptum/src"]
+exclude = ["tests", "tests.*"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+select = ["E", "F", "I"]

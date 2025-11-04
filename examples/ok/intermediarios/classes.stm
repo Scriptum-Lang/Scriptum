@@ -1,0 +1,7 @@
+functio init() -> numerus {
+    mutabilis numerus saldo = 100;
+    dum saldo > 0 {
+        saldo = saldo - 10;
+    }
+    redde saldo;
+}
