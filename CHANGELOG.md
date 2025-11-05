@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 - 2025-11-04
 
 - Adicionado pipeline CI multiplataforma (Linux/macOS/Windows) com testes `uv run pytest` e artefatos buildados via `uv build`.
 - Documentação atualizada para instalação com `uv`, `pip`, e `pipx` em todos os sistemas operacionais suportados.
