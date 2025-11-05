@@ -56,18 +56,37 @@ jobs:
 
       - name: Prepare binary artifact
         shell: python
+        env:
+          PLATFORM: ${{ runner.os }}
+          TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           import pathlib
           import shutil
           import sys
+          import os
 
           artifacts = pathlib.Path("artifacts")
           artifacts.mkdir(exist_ok=True)
+          platform = os.environ["PLATFORM"].lower()
+          tag = os.environ["TAG_NAME"]
+          suffix = {
+              "windows": "windows",
+              "macos": "macos",
+              "linux": "linux",
+          }.get(platform, platform.replace(" ", "_"))
           binary_name = "scriptum.exe" if sys.platform.startswith("win") else "scriptum"
+          if sys.platform.startswith("win"):
+              target_name = f"scriptum-{tag}-{suffix}.exe"
+          else:
+              target_name = f"scriptum-{tag}-{suffix}"
           src = pathlib.Path("dist") / binary_name
           if not src.exists():
               raise SystemExit(f"Expected binary {src} not found")
-          shutil.copy2(src, artifacts / binary_name)
+          target_path = artifacts / target_name
+          shutil.copy2(src, target_path)
+          github_env = pathlib.Path(os.environ["GITHUB_ENV"])
+          with github_env.open("a", encoding="utf8") as env_file:
+              env_file.write(f"BINARY_ARTIFACT={target_name}\n")
 
       - name: Smoke test --version (Unix)
         if: runner.os != 'Windows'
@@ -97,7 +116,8 @@ jobs:
           pkgdir="artifacts/pkg"
           rm -rf "$pkgdir"
           mkdir -p "$pkgdir"
-          cp artifacts/scriptum "$pkgdir/"
+          cp "artifacts/${BINARY_ARTIFACT}" "$pkgdir/"
+          mv "$pkgdir/${BINARY_ARTIFACT}" "$pkgdir/scriptum"
           cp LICENSE README.md "$pkgdir/"
           tarball="scriptum-${TAG_NAME}-${{ matrix.os }}.tar.gz"
           tar -C "$pkgdir" -czf "artifacts/$tarball" .
@@ -110,7 +130,8 @@ jobs:
           $pkgDir = "artifacts\pkg"
           if (Test-Path $pkgDir) { Remove-Item -Recurse -Force $pkgDir }
           New-Item -ItemType Directory -Force -Path $pkgDir | Out-Null
-          Copy-Item artifacts\scriptum.exe $pkgDir\
+          Copy-Item ("artifacts\" + $env:BINARY_ARTIFACT) $pkgDir\
+          Rename-Item "$pkgDir\$env:BINARY_ARTIFACT" -NewName "scriptum.exe"
           Copy-Item LICENSE $pkgDir\
           Copy-Item README.md $pkgDir\
           $zip = "scriptum-$env:TAG_NAME-${{ matrix.os }}.zip"
@@ -119,17 +140,32 @@ jobs:
 
       - name: Generate SHA256 sums
         shell: python
+        env:
+          PLATFORM: ${{ runner.os }}
+          TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           import hashlib
           import pathlib
+          import os
 
           artifacts = pathlib.Path("artifacts")
-          sha_path = artifacts / "SHA256SUMS"
-          files = sorted(p for p in artifacts.iterdir() if p.is_file() and p.name != "SHA256SUMS")
+          platform = os.environ["PLATFORM"].lower()
+          tag = os.environ["TAG_NAME"]
+          suffix = {
+              "windows": "windows",
+              "macos": "macos",
+              "linux": "linux",
+          }.get(platform, platform.replace(" ", "_"))
+          sha_name = f"SHA256SUMS-{tag}-{suffix}.txt"
+          sha_path = artifacts / sha_name
+          files = sorted(p for p in artifacts.iterdir() if p.is_file() and p.name != sha_name)
           with sha_path.open("w", encoding="utf8") as handle:
               for file in files:
                   digest = hashlib.sha256(file.read_bytes()).hexdigest()
                   handle.write(f"{digest}  {file.name}\n")
+          github_env = pathlib.Path(os.environ["GITHUB_ENV"])
+          with github_env.open("a", encoding="utf8") as env_file:
+              env_file.write(f"SHA_FILE={sha_name}\n")
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -160,4 +196,3 @@ jobs:
         with:
           files: ${{ steps.files.outputs.files }}
           generate_release_notes: true
-          overwrite: true

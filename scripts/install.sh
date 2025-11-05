@@ -31,27 +31,75 @@ detect_platform() {
 
   PLATFORM="$os"
   ARCH="$arch"
+  SUFFIX="$os"
 }
 
 download_binary() {
-  local asset url tmp
-  asset="scriptum-${PLATFORM}-${ARCH}" # Adjust to match release asset names.
-  url="https://github.com/${REPO}/releases/latest/download/${asset}"
-
+  local tmp download_url version py_cmd
   tmp="$(mktemp -d)"
   TMP_DIR="$tmp"
   TMP_FILE="${tmp}/scriptum"
+  local api_url="https://api.github.com/repos/${REPO}/releases/latest"
 
-  echo "Downloading Scriptum from ${url}..."
+  if command -v python3 >/dev/null 2>&1; then
+    py_cmd="python3"
+  elif command -v python >/dev/null 2>&1; then
+    py_cmd="python"
+  else
+    echo "Python is required to resolve the latest release asset." >&2
+    exit 1
+  fi
+
+  download_url="$(REPO="$REPO" SUFFIX="$SUFFIX" "$py_cmd" - <<'PY'
+import json
+import os
+import sys
+import urllib.request
+
+repo = os.environ["REPO"]
+suffix = os.environ["SUFFIX"]
+api_url = f"https://api.github.com/repos/{repo}/releases/latest"
+req = urllib.request.Request(api_url, headers={"User-Agent": "scriptum-installer", "Accept": "application/vnd.github+json"})
+try:
+    with urllib.request.urlopen(req) as response:
+        data = json.load(response)
+except Exception as exc:
+    sys.exit(f"Failed to query latest release: {exc}")
+
+tag = data.get("tag_name", "")
+assets = data.get("assets", [])
+target_url = None
+for asset in assets:
+    name = asset.get("name", "")
+    if not name.startswith("scriptum-"):
+        continue
+    if name.endswith(f"-{suffix}") or name.endswith(f"-{suffix}.exe"):
+        target_url = asset.get("browser_download_url")
+        break
+
+if not target_url:
+    sys.exit(f"Unable to find Scriptum asset for suffix '{suffix}' in release {tag or 'latest'}")
+
+print(target_url)
+PY
+)"
+
+  if [ -z "$download_url" ]; then
+    exit 1
+  fi
+
+  echo "Downloading Scriptum from ${download_url}..."
+  local temp_file="${TMP_FILE}.download"
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL -o "$TMP_FILE" "$url"
+    curl -fsSL -o "$temp_file" "$download_url"
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$TMP_FILE" "$url"
+    wget -qO "$temp_file" "$download_url"
   else
     echo "Neither curl nor wget is available; cannot download binary." >&2
     exit 1
   fi
 
+  mv "$temp_file" "$TMP_FILE"
   chmod +x "$TMP_FILE"
 }
 

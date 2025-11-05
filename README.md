@@ -18,9 +18,9 @@ Scriptum e uma linguagem com sintaxe inspirada em JavaScript, palavras-chave em 
 
 3. **Download manual**  
    - Acesse a ultima release em `https://github.com/Scriptum-Lang/Scriptum/releases/latest`.
-   - Baixe o binario adequado ao seu sistema.
-   - Linux/macOS: `chmod +x scriptum` e mova para uma pasta presente no `PATH` (ex.: `/usr/local/bin` ou `~/.local/bin`).  
-   - Windows: copie `scriptum.exe` para um diretorio no `PATH` ou adicione o diretorio aos caminhos de usuario.
+   - Baixe o binario adequado ao seu sistema (`scriptum-vX.Y.Z-linux`, `scriptum-vX.Y.Z-macos`, `scriptum-vX.Y.Z-windows.exe`).
+   - Linux/macOS: renomeie para `scriptum`, execute `chmod +x scriptum` e mova para um diretorio presente no `PATH` (ex.: `/usr/local/bin` ou `~/.local/bin`).  
+   - Windows: renomeie o arquivo para `scriptum.exe`, copie para um diretorio no `PATH` ou adicione o diretorio aos caminhos de usuario.
 
 ## Verificacao
 
