@@ -1,0 +1,157 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build and Package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      TAG_NAME: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip build wheel pyinstaller
+
+      - name: Install project
+        run: pip install -e .
+
+      - name: Run tests (if available)
+        shell: bash
+        run: |
+          if command -v pytest >/dev/null 2>&1; then
+            set +e
+            pytest -q
+            status=$?
+            set -e
+            if [ "$status" -eq 5 ]; then
+              echo "Pytest: no tests collected."
+            elif [ "$status" -ne 0 ]; then
+              echo "Pytest failed with exit code $status."
+              exit "$status"
+            fi
+          else
+            echo "Pytest not installed; skipping."
+          fi
+
+      - name: Build standalone binary
+        run: pyinstaller -F -n scriptum --additional-hooks-dir hooks --collect-data scriptum --collect-submodules scriptum src/scriptum/driver.py
+
+      - name: Prepare binary artifact
+        run: |
+          python - <<'PY'
+          import pathlib, shutil, sys
+          artifacts = pathlib.Path("artifacts")
+          artifacts.mkdir(exist_ok=True)
+          binary_name = "scriptum.exe" if sys.platform.startswith("win") else "scriptum"
+          src = pathlib.Path("dist") / binary_name
+          if not src.exists():
+              raise SystemExit(f"Expected binary {src} not found")
+          shutil.copy2(src, artifacts / binary_name)
+          PY
+
+      - name: Smoke test --version (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ./dist/scriptum --version
+
+      - name: Smoke test --help (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ./dist/scriptum --help
+
+      - name: Smoke test --version (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: dist\scriptum.exe --version
+
+      - name: Smoke test --help (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: dist\scriptum.exe --help
+
+      - name: Package tarball
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -e
+          pkgdir="artifacts/pkg"
+          rm -rf "$pkgdir"
+          mkdir -p "$pkgdir"
+          cp artifacts/scriptum "$pkgdir/"
+          cp LICENSE README.md "$pkgdir/"
+          tarball="scriptum-${TAG_NAME}-${{ matrix.os }}.tar.gz"
+          tar -C "$pkgdir" -czf "artifacts/$tarball" .
+          rm -rf "$pkgdir"
+
+      - name: Package zip
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $pkgDir = "artifacts\pkg"
+          if (Test-Path $pkgDir) { Remove-Item -Recurse -Force $pkgDir }
+          New-Item -ItemType Directory -Force -Path $pkgDir | Out-Null
+          Copy-Item artifacts\scriptum.exe $pkgDir\
+          Copy-Item LICENSE $pkgDir\
+          Copy-Item README.md $pkgDir\
+          $zip = "scriptum-$env:TAG_NAME-${{ matrix.os }}.zip"
+          Compress-Archive -Path "$pkgDir\*" -DestinationPath "artifacts\$zip"
+          Remove-Item -Recurse -Force $pkgDir
+
+      - name: Generate SHA256 sums
+        run: |
+          python - <<'PY'
+          import hashlib
+          import pathlib
+          artifacts = pathlib.Path("artifacts")
+          sha_path = artifacts / "SHA256SUMS"
+          files = sorted(p for p in artifacts.iterdir() if p.is_file() and p.name != "SHA256SUMS")
+          with sha_path.open("w", encoding="utf8") as handle:
+              for file in files:
+                  digest = hashlib.sha256(file.read_bytes()).hexdigest()
+                  handle.write(f"{digest}  {file.name}\n")
+          PY
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: scriptum-${{ matrix.os }}
+          path: artifacts/
+
+  publish_release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_artifacts
+
+      - name: Collect release files
+        id: files
+        run: |
+          files=$(find release_artifacts -type f -print | sort)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.files.outputs.files }}
+          generate_release_notes: true

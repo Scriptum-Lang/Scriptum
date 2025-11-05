@@ -1,0 +1,3 @@
+functio main() {
+    redde 42;
+}

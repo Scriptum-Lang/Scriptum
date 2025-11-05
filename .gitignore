@@ -12,5 +12,6 @@ env/
 .uv-cache/
 dist/
 build/
+*.spec
 *.log
 .DS_Store

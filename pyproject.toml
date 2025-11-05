@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "scriptum"
 version = "0.3.0"
-description = "Compiler for the Scriptum language."
+description = "Scriptum language toolchain (lexer, parser, sema; standalone builds)"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "MIT"
+license = { text = "MIT" }
 authors = [{ name = "Scriptum Team" }]
 dependencies = [
     "click>=8.1",
@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.scripts]
-scriptum = "scriptum.cli:main"
+scriptum = "scriptum.driver:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -31,6 +31,9 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages.find]
 where = ["src"]
 exclude = ["tests", "tests.*"]
+
+[tool.setuptools.package-data]
+scriptum = ["**/*.json", "**/*.txt", "**/*.tbl", "data/**/*", "lexer/**/*"]
 
 [tool.black]
 line-length = 120
