@@ -21,6 +21,24 @@ from .parser.parser import ScriptumParser
 from .text import SourceFile, highlight_span, line_col
 
 
+class ScriptumFile(click.ParamType):
+    """Click parameter type that validates Scriptum source files."""
+
+    name = "scriptum-source"
+
+    def __init__(self, exists: bool = True) -> None:
+        self._delegate = click.Path(exists=exists, dir_okay=False, path_type=pathlib.Path)
+
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> pathlib.Path:
+        path = self._delegate.convert(value, param, ctx)
+        if path.suffix.lower() != ".stm":
+            self.fail("Scriptum source files must use the .stm extension.", param, ctx)
+        return path
+
+
+SCRIPTUM_FILE = ScriptumFile()
+
+
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 def cli() -> None:
     """Scriptum build and developer utilities."""
@@ -35,7 +53,7 @@ def version_cmd() -> None:
 @cli.command("compile")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
     required=False,
 )
 @click.option(
@@ -74,7 +92,7 @@ def build_lexer_cmd() -> None:
 @cli.command("lex")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
 )
 def lex_cmd(source: pathlib.Path) -> None:
     """Tokenise a Scriptum source file and emit JSON."""
@@ -97,7 +115,7 @@ def lex_cmd(source: pathlib.Path) -> None:
 @cli.command("parse")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
 )
 def parse_cmd(source: pathlib.Path) -> None:
     """Parse a Scriptum source file and print the AST as JSON."""
@@ -117,7 +135,7 @@ def parse_cmd(source: pathlib.Path) -> None:
 @cli.command("sema")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
 )
 def sema_cmd(source: pathlib.Path) -> None:
     """Run semantic analysis and report diagnostics as JSON."""
@@ -140,7 +158,7 @@ def sema_cmd(source: pathlib.Path) -> None:
 @cli.command("ir")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
 )
 def ir_cmd(source: pathlib.Path) -> None:
     """Lower a Scriptum source file to IR and print it as JSON."""
@@ -166,7 +184,7 @@ def ir_cmd(source: pathlib.Path) -> None:
 @cli.command("run")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
 )
 def run_cmd(source: pathlib.Path) -> None:
     """Interpret a Scriptum program via the IR mini-VM."""
@@ -191,7 +209,7 @@ def run_cmd(source: pathlib.Path) -> None:
 @cli.command("fmt")
 @click.argument(
     "source",
-    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
+    type=SCRIPTUM_FILE,
     required=False,
 )
 def fmt_cmd(source: Optional[pathlib.Path]) -> None:

@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Compiler for the Scriptum language."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [{ name = "Scriptum Team" }]
 dependencies = [
     "click>=8.1",
@@ -26,10 +26,10 @@ dev = [
 scriptum = "scriptum.cli:main"
 
 [tool.setuptools]
-package-dir = { "" = "scriptum/src" }
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
-where = ["scriptum/src"]
+where = ["src"]
 exclude = ["tests", "tests.*"]
 
 [tool.black]

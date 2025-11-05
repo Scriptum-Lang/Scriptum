@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from click.testing import CliRunner
 
 from scriptum.cli import cli
@@ -53,3 +55,16 @@ def test_cli_ir_and_run_commands() -> None:
     run_result = runner.invoke(cli, ["run", str(FIXTURES / "main_return.stm")])
     assert run_result.exit_code == 0
     assert json.loads(run_result.output) == 2
+
+
+@pytest.mark.parametrize(
+    "command",
+    ["lex", "parse", "sema", "ir", "run", "fmt", "compile"],
+)
+def test_cli_rejects_non_stm_files(command: str) -> None:
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        Path("program.txt").write_text("scriptum content")
+        result = runner.invoke(cli, [command, "program.txt"])
+    assert result.exit_code != 0
+    assert "must use the .stm extension" in result.output

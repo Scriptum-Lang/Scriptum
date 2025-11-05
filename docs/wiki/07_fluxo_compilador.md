@@ -1,6 +1,6 @@
 # Fluxo completo do compilador Scriptum
 
-Este documento descreve, etapa por etapa, como o projeto Scriptum transforma um arquivo `.stm` em estruturas internas prontas para analise, geracao de codigo ou outras ferramentas. Cada fase aponta para os modulos Python correspondentes dentro de `scriptum/src/scriptum`.
+Este documento descreve, etapa por etapa, como o projeto Scriptum transforma um arquivo `.stm` em estruturas internas prontas para analise, geracao de codigo ou outras ferramentas. Cada fase aponta para os modulos Python correspondentes dentro de `src/scriptum`.
 
 ## 1. Entrada de texto
 
