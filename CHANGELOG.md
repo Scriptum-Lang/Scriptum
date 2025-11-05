@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0] - 2025-11-05
+## [0.3.1] - 2025-11-05
 
 ### Added
 - Standalone PyInstaller builds for Linux, macOS, and Windows (one-file executables).
