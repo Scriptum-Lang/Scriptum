@@ -160,3 +160,4 @@ jobs:
         with:
           files: ${{ steps.files.outputs.files }}
           generate_release_notes: true
+          overwrite: true
