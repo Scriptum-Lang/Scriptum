@@ -83,6 +83,32 @@ scriptum --help
 > Nota: o analisador léxico normaliza entradas para o formulário NFKC e substitui caracteres fora de ASCII por espaços, garantindo que fontes com acentuação sejam aceitas sem falhas.
 > Nota 2: os comandos que recebem arquivos verificam a extensão `.stm` e falham com uma mensagem clara quando o caminho não segue o padrão.
 
+### Instalação global (`pipx`)
+
+Para manter o compilador isolado do Python do sistema:
+
+```bash
+pipx install .
+```
+
+Após a instalação, os comandos abaixo funcionam de forma idêntica em Windows, macOS e Linux:
+
+- `scriptum --help`
+- `python -m scriptum`
+- `python -m scriptum.cli --help`
+
+### Execução multiplataforma
+
+Depois de clonar o repositório e preparar o ambiente (`uv sync` ou `pip install -e .`), valide:
+
+```bash
+uv run scriptum --help
+uv run python -m scriptum --help
+uv run python -m scriptum.cli lex examples/ok/loops_and_funcs.stm
+```
+
+Os mesmos comandos funcionam trocando `uv run` por `python -m venv .venv && .\.venv\Scripts\python` (Windows) ou `source .venv/bin/activate` (macOS/Linux) caso esteja usando `pip` puro.
+
 ### Exemplos rápidos
 
 Tokenizar um programa válido:
