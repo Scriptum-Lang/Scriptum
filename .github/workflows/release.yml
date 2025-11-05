@@ -55,6 +55,7 @@ jobs:
         run: pyinstaller -F -n scriptum --additional-hooks-dir hooks --collect-data scriptum --collect-submodules scriptum src/scriptum/driver.py
 
       - name: Prepare binary artifact
+        shell: bash
         run: |
           python - <<'PY'
           import pathlib, shutil, sys
@@ -116,6 +117,7 @@ jobs:
           Remove-Item -Recurse -Force $pkgDir
 
       - name: Generate SHA256 sums
+        shell: bash
         run: |
           python - <<'PY'
           import hashlib
