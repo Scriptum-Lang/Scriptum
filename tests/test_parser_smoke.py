@@ -8,7 +8,7 @@ from scriptum.ast import nodes
 from scriptum.parser.parser import ScriptumParser
 from scriptum.text import SourceFile
 
-EXAMPLES_ROOT = Path(__file__).resolve().parents[2] / "examples"
+EXAMPLES_ROOT = Path(__file__).resolve().parents[1] / "examples"
 
 
 def _parse(relative: str) -> nodes.Module:

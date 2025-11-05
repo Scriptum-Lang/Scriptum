@@ -18,7 +18,7 @@
   python scripts/build_afd.py
   ```
 - Para visualizar a saída no terminal, acrescente `--show`.
-- O arquivo `scriptum/src/scriptum/lexer/tables.json` guarda todas as expressões regulares, prioridades e metadados.
+- O arquivo `src/scriptum/lexer/tables.json` guarda todas as expressões regulares, prioridades e metadados.
 
 ## Testes manuais
 - Após instalar as dependências (`pip install -e ".[dev]"`), valide a especificação:

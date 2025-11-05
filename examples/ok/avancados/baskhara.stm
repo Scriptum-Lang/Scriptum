@@ -1,0 +1,15 @@
+functio baskhara(numerus a, numerus b, numerus c) -> [] {
+    mutabilis numerus delta = b**2 - 4 * a * c;
+    si (delta < 0) {
+        redde 0;
+    }
+    aliter {
+        mutabilis numerus x1 = -b + delta**0.5 / (2*a);
+        mutabilis numerus x2 = -b - delta**0.5 / (2*a);
+        redde [x1,x2];
+    }
+}
+
+functio main() -> [] {
+    redde baskhara(1,-5,6);
+}

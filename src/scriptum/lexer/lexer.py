@@ -5,6 +5,7 @@ Deterministic lexer implementation backed by pre-generated DFA tables.
 from __future__ import annotations
 
 import json
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, List, Optional, Sequence
@@ -55,7 +56,8 @@ class ScriptumLexer:
         """Tokenise *source* into a sequence of Scriptum tokens."""
 
         result: List[tokens.Token] = []
-        text_data = source.text
+        normalized_text = unicodedata.normalize("NFKC", source.text)
+        text_data = "".join(ch if ord(ch) < 128 else " " for ch in normalized_text)
         position = 0
         length = len(text_data)
 

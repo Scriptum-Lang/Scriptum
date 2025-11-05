@@ -178,46 +178,46 @@
     "10": 20,
     "11": 30,
     "12": 21,
-    "13": 22,
+    "13": 26,
     "14": 23,
     "15": 3,
     "16": 3,
-    "17": 31,
-    "18": 32,
-    "19": 24,
+    "17": 32,
+    "18": 31,
+    "19": 19,
     "2": 0,
-    "20": 25,
-    "21": 26,
+    "20": 17,
+    "21": 18,
     "22": 33,
     "23": 5,
     "24": 36,
     "25": 37,
-    "26": 38,
-    "28": 39,
-    "29": 8,
-    "3": 17,
+    "26": 34,
+    "28": 35,
+    "29": 13,
+    "3": 25,
     "30": 4,
-    "32": 9,
-    "33": 10,
-    "34": 27,
+    "32": 11,
+    "33": 16,
+    "34": 28,
     "36": 1,
-    "39": 28,
-    "40": 11,
+    "39": 27,
+    "40": 15,
     "41": 12,
     "42": 29,
-    "43": 13,
-    "44": 14,
-    "45": 15,
-    "46": 16,
-    "47": 6,
-    "5": 18,
+    "43": 14,
+    "44": 8,
+    "45": 9,
+    "46": 10,
+    "47": 7,
+    "5": 24,
     "50": 3,
     "52": 3,
-    "53": 7,
+    "53": 6,
     "55": 2,
-    "7": 34,
-    "8": 35,
-    "9": 19
+    "7": 38,
+    "8": 39,
+    "9": 22
   },
   "final_token_kind": {
     "10": "OPERATOR",
@@ -460,6 +460,3926 @@
     56,
     57
   ],
+  "subset_dfa": {
+    "alphabet": [
+      "\\x00",
+      "\\x01",
+      "\\x02",
+      "\\x03",
+      "\\x04",
+      "\\x05",
+      "\\x06",
+      "\\x07",
+      "\\x08",
+      "\t",
+      "\n",
+      "\\x0b",
+      "\\x0c",
+      "\\x0d",
+      "\\x0e",
+      "\\x0f",
+      "\\x10",
+      "\\x11",
+      "\\x12",
+      "\\x13",
+      "\\x14",
+      "\\x15",
+      "\\x16",
+      "\\x17",
+      "\\x18",
+      "\\x19",
+      "\\x1a",
+      "\\x1b",
+      "\\x1c",
+      "\\x1d",
+      "\\x1e",
+      "\\x1f",
+      " ",
+      "!",
+      "\"",
+      "#",
+      "$",
+      "%",
+      "&",
+      "'",
+      "(",
+      ")",
+      "*",
+      "+",
+      ",",
+      "-",
+      ".",
+      "/",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      ":",
+      ";",
+      "<",
+      "=",
+      ">",
+      "?",
+      "@",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      "[",
+      "\\",
+      "]",
+      "^",
+      "_",
+      "`",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "{",
+      "|",
+      "}",
+      "~",
+      "\\x7f"
+    ],
+    "finals": [
+      1,
+      2,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      44,
+      45,
+      46,
+      49,
+      54,
+      55,
+      56,
+      57,
+      58,
+      62,
+      63,
+      64
+    ],
+    "start": 0,
+    "states": [
+      {
+        "accepting": null,
+        "id": 0,
+        "subset": [
+          0,
+          1,
+          8,
+          17,
+          36,
+          38,
+          39,
+          40,
+          42,
+          44,
+          75,
+          102,
+          109,
+          116,
+          123,
+          128,
+          133,
+          138,
+          143,
+          148,
+          153,
+          158,
+          163,
+          168,
+          171,
+          174,
+          177,
+          180,
+          183,
+          186,
+          189,
+          192,
+          195,
+          198,
+          203,
+          208,
+          213,
+          216,
+          219,
+          222,
+          225,
+          228,
+          231,
+          234,
+          237,
+          240
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              " "
+            ],
+            "target": 1
+          },
+          {
+            "symbols": [
+              "?"
+            ],
+            "target": 2
+          },
+          {
+            "symbols": [
+              "|"
+            ],
+            "target": 3
+          },
+          {
+            "symbols": [
+              "/"
+            ],
+            "target": 4
+          },
+          {
+            "symbols": [
+              "&"
+            ],
+            "target": 5
+          },
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 6
+          },
+          {
+            "symbols": [
+              "!"
+            ],
+            "target": 7
+          },
+          {
+            "symbols": [
+              ">"
+            ],
+            "target": 8
+          },
+          {
+            "symbols": [
+              "<"
+            ],
+            "target": 9
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 10
+          },
+          {
+            "symbols": [
+              "-"
+            ],
+            "target": 11
+          },
+          {
+            "symbols": [
+              "0"
+            ],
+            "target": 12
+          },
+          {
+            "symbols": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ],
+            "target": 13
+          },
+          {
+            "symbols": [
+              "+"
+            ],
+            "target": 14
+          },
+          {
+            "symbols": [
+              "%"
+            ],
+            "target": 15
+          },
+          {
+            "symbols": [
+              "."
+            ],
+            "target": 16
+          },
+          {
+            "symbols": [
+              ":"
+            ],
+            "target": 17
+          },
+          {
+            "symbols": [
+              "\""
+            ],
+            "target": 18
+          },
+          {
+            "symbols": [
+              ","
+            ],
+            "target": 19
+          },
+          {
+            "symbols": [
+              ";"
+            ],
+            "target": 20
+          },
+          {
+            "symbols": [
+              "{"
+            ],
+            "target": 21
+          },
+          {
+            "symbols": [
+              "}"
+            ],
+            "target": 22
+          },
+          {
+            "symbols": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "_",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "target": 23
+          },
+          {
+            "symbols": [
+              "["
+            ],
+            "target": 24
+          },
+          {
+            "symbols": [
+              "]"
+            ],
+            "target": 25
+          },
+          {
+            "symbols": [
+              "("
+            ],
+            "target": 26
+          },
+          {
+            "symbols": [
+              ")"
+            ],
+            "target": 27
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": true,
+          "index": 0,
+          "kind": "WHITESPACE",
+          "name": "WHITESPACE",
+          "priority": 100
+        },
+        "id": 1,
+        "subset": [
+          2,
+          3,
+          5,
+          6,
+          7
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              " "
+            ],
+            "target": 28
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 33,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_QMARK",
+          "priority": 40
+        },
+        "id": 2,
+        "subset": [
+          124,
+          125,
+          129,
+          130,
+          223,
+          224
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "?"
+            ],
+            "target": 29
+          },
+          {
+            "symbols": [
+              ":"
+            ],
+            "target": 30
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 3,
+        "subset": [
+          134,
+          135
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "|"
+            ],
+            "target": 31
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 23,
+          "kind": "OPERATOR",
+          "name": "OP_SLASH",
+          "priority": 50
+        },
+        "id": 4,
+        "subset": [
+          9,
+          10,
+          18,
+          19,
+          187,
+          188
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 32
+          },
+          {
+            "symbols": [
+              "/"
+            ],
+            "target": 33
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 5,
+        "subset": [
+          139,
+          140
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "&"
+            ],
+            "target": 34
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 17,
+          "kind": "OPERATOR",
+          "name": "OP_EQ",
+          "priority": 50
+        },
+        "id": 6,
+        "subset": [
+          110,
+          111,
+          144,
+          145,
+          169,
+          170,
+          209,
+          210
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 35
+          },
+          {
+            "symbols": [
+              ">"
+            ],
+            "target": 36
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 25,
+          "kind": "OPERATOR",
+          "name": "OP_BANG",
+          "priority": 50
+        },
+        "id": 7,
+        "subset": [
+          117,
+          118,
+          149,
+          150,
+          193,
+          194
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 37
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 18,
+          "kind": "OPERATOR",
+          "name": "OP_GT",
+          "priority": 50
+        },
+        "id": 8,
+        "subset": [
+          154,
+          155,
+          172,
+          173
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 38
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 19,
+          "kind": "OPERATOR",
+          "name": "OP_LT",
+          "priority": 50
+        },
+        "id": 9,
+        "subset": [
+          159,
+          160,
+          175,
+          176
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 39
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 22,
+          "kind": "OPERATOR",
+          "name": "OP_STAR",
+          "priority": 50
+        },
+        "id": 10,
+        "subset": [
+          164,
+          165,
+          184,
+          185
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 40
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 21,
+          "kind": "OPERATOR",
+          "name": "OP_MINUS",
+          "priority": 50
+        },
+        "id": 11,
+        "subset": [
+          37,
+          39,
+          40,
+          42,
+          44,
+          181,
+          182,
+          204,
+          205
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0"
+            ],
+            "target": 12
+          },
+          {
+            "symbols": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9"
+            ],
+            "target": 13
+          },
+          {
+            "symbols": [
+              ">"
+            ],
+            "target": 41
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 12,
+        "subset": [
+          41,
+          43,
+          50,
+          58,
+          59,
+          60,
+          72,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "."
+            ],
+            "target": 42
+          },
+          {
+            "symbols": [
+              "E",
+              "e"
+            ],
+            "target": 43
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 13,
+        "subset": [
+          41,
+          45,
+          46,
+          48,
+          49,
+          50,
+          58,
+          59,
+          60,
+          72,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "."
+            ],
+            "target": 42
+          },
+          {
+            "symbols": [
+              "E",
+              "e"
+            ],
+            "target": 43
+          },
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 44
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 20,
+          "kind": "OPERATOR",
+          "name": "OP_PLUS",
+          "priority": 50
+        },
+        "id": 14,
+        "subset": [
+          178,
+          179
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 24,
+          "kind": "OPERATOR",
+          "name": "OP_PERCENT",
+          "priority": 50
+        },
+        "id": 15,
+        "subset": [
+          190,
+          191
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 26,
+          "kind": "OPERATOR",
+          "name": "OP_DOT",
+          "priority": 50
+        },
+        "id": 16,
+        "subset": [
+          196,
+          197
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 32,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_COLON",
+          "priority": 40
+        },
+        "id": 17,
+        "subset": [
+          199,
+          200,
+          220,
+          221
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              ":"
+            ],
+            "target": 45
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 18,
+        "subset": [
+          76,
+          77,
+          79,
+          81,
+          85,
+          97,
+          98,
+          99
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\""
+            ],
+            "target": 46
+          },
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 47
+          },
+          {
+            "symbols": [
+              "\\"
+            ],
+            "target": 48
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 30,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_COMMA",
+          "priority": 40
+        },
+        "id": 19,
+        "subset": [
+          214,
+          215
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 31,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_SEMI",
+          "priority": 40
+        },
+        "id": 20,
+        "subset": [
+          217,
+          218
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 34,
+          "kind": "DELIMITER",
+          "name": "DELIM_LBRACE",
+          "priority": 40
+        },
+        "id": 21,
+        "subset": [
+          226,
+          227
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 35,
+          "kind": "DELIMITER",
+          "name": "DELIM_RBRACE",
+          "priority": 40
+        },
+        "id": 22,
+        "subset": [
+          229,
+          230
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 5,
+          "kind": "IDENTIFIER",
+          "name": "IDENTIFIER",
+          "priority": 60
+        },
+        "id": 23,
+        "subset": [
+          103,
+          104,
+          106,
+          107,
+          108
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "$",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "_",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "target": 49
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 36,
+          "kind": "DELIMITER",
+          "name": "DELIM_LBRACKET",
+          "priority": 40
+        },
+        "id": 24,
+        "subset": [
+          232,
+          233
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 37,
+          "kind": "DELIMITER",
+          "name": "DELIM_RBRACKET",
+          "priority": 40
+        },
+        "id": 25,
+        "subset": [
+          235,
+          236
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 38,
+          "kind": "DELIMITER",
+          "name": "DELIM_LPAREN",
+          "priority": 40
+        },
+        "id": 26,
+        "subset": [
+          238,
+          239
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 39,
+          "kind": "DELIMITER",
+          "name": "DELIM_RPAREN",
+          "priority": 40
+        },
+        "id": 27,
+        "subset": [
+          241,
+          242
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": true,
+          "index": 0,
+          "kind": "WHITESPACE",
+          "name": "WHITESPACE",
+          "priority": 100
+        },
+        "id": 28,
+        "subset": [
+          3,
+          4,
+          6,
+          7
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              " "
+            ],
+            "target": 28
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 9,
+          "kind": "OPERATOR",
+          "name": "OP_QMARK_QMARK",
+          "priority": 50
+        },
+        "id": 29,
+        "subset": [
+          131,
+          132
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 8,
+          "kind": "OPERATOR",
+          "name": "OP_QMARK_COLON",
+          "priority": 50
+        },
+        "id": 30,
+        "subset": [
+          126,
+          127
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 10,
+          "kind": "OPERATOR",
+          "name": "OP_BAR_BAR",
+          "priority": 50
+        },
+        "id": 31,
+        "subset": [
+          136,
+          137
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": null,
+        "id": 32,
+        "subset": [
+          20,
+          21,
+          23,
+          25,
+          27,
+          29,
+          30,
+          31
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": true,
+          "index": 1,
+          "kind": "COMMENT",
+          "name": "COMMENT_LINE",
+          "priority": 90
+        },
+        "id": 33,
+        "subset": [
+          11,
+          12,
+          14,
+          15,
+          16
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 54
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 11,
+          "kind": "OPERATOR",
+          "name": "OP_AMP_AMP",
+          "priority": 50
+        },
+        "id": 34,
+        "subset": [
+          141,
+          142
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 12,
+          "kind": "OPERATOR",
+          "name": "OP_EQ_EQ",
+          "priority": 50
+        },
+        "id": 35,
+        "subset": [
+          112,
+          113,
+          146,
+          147
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 55
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 29,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_EQ_GT",
+          "priority": 40
+        },
+        "id": 36,
+        "subset": [
+          211,
+          212
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 13,
+          "kind": "OPERATOR",
+          "name": "OP_BANG_EQ",
+          "priority": 50
+        },
+        "id": 37,
+        "subset": [
+          119,
+          120,
+          151,
+          152
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "="
+            ],
+            "target": 56
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 14,
+          "kind": "OPERATOR",
+          "name": "OP_GT_EQ",
+          "priority": 50
+        },
+        "id": 38,
+        "subset": [
+          156,
+          157
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 15,
+          "kind": "OPERATOR",
+          "name": "OP_LT_EQ",
+          "priority": 50
+        },
+        "id": 39,
+        "subset": [
+          161,
+          162
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 16,
+          "kind": "OPERATOR",
+          "name": "OP_STAR_STAR",
+          "priority": 50
+        },
+        "id": 40,
+        "subset": [
+          166,
+          167
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 28,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_MINUS_GT",
+          "priority": 40
+        },
+        "id": 41,
+        "subset": [
+          206,
+          207
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": null,
+        "id": 42,
+        "subset": [
+          51,
+          52
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 57
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 43,
+        "subset": [
+          61,
+          62,
+          64,
+          65,
+          66
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 58
+          },
+          {
+            "symbols": [
+              "+",
+              "-"
+            ],
+            "target": 59
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 44,
+        "subset": [
+          41,
+          46,
+          47,
+          49,
+          50,
+          58,
+          59,
+          60,
+          72,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "."
+            ],
+            "target": 42
+          },
+          {
+            "symbols": [
+              "E",
+              "e"
+            ],
+            "target": 43
+          },
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 44
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 27,
+          "kind": "PUNCTUATION",
+          "name": "PUNC_COLON_COLON",
+          "priority": 40
+        },
+        "id": 45,
+        "subset": [
+          201,
+          202
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 4,
+          "kind": "STRING_LITERAL",
+          "name": "STRING_LITERAL",
+          "priority": 70
+        },
+        "id": 46,
+        "subset": [
+          100,
+          101
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": null,
+        "id": 47,
+        "subset": [
+          77,
+          78,
+          79,
+          80,
+          81,
+          85,
+          98,
+          99
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\""
+            ],
+            "target": 46
+          },
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 47
+          },
+          {
+            "symbols": [
+              "\\"
+            ],
+            "target": 48
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 48,
+        "subset": [
+          82,
+          83,
+          86,
+          87
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\"",
+              "/",
+              "\\",
+              "b",
+              "f",
+              "n",
+              "r",
+              "t"
+            ],
+            "target": 60
+          },
+          {
+            "symbols": [
+              "u"
+            ],
+            "target": 61
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 5,
+          "kind": "IDENTIFIER",
+          "name": "IDENTIFIER",
+          "priority": 60
+        },
+        "id": 49,
+        "subset": [
+          104,
+          105,
+          107,
+          108
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "$",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "_",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "target": 49
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 50,
+        "subset": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          27,
+          30,
+          31
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 51,
+        "subset": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          30,
+          31
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 52,
+        "subset": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          27,
+          30,
+          31,
+          32,
+          33
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          },
+          {
+            "symbols": [
+              "/"
+            ],
+            "target": 62
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 53,
+        "subset": [
+          21,
+          22,
+          23,
+          25,
+          27,
+          28,
+          30,
+          31
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": true,
+          "index": 1,
+          "kind": "COMMENT",
+          "name": "COMMENT_LINE",
+          "priority": 90
+        },
+        "id": 54,
+        "subset": [
+          12,
+          13,
+          15,
+          16
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 54
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 6,
+          "kind": "OPERATOR",
+          "name": "OP_EQ_EQ_EQ",
+          "priority": 50
+        },
+        "id": 55,
+        "subset": [
+          114,
+          115
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 7,
+          "kind": "OPERATOR",
+          "name": "OP_BANG_EQ_EQ",
+          "priority": 50
+        },
+        "id": 56,
+        "subset": [
+          121,
+          122
+        ],
+        "transitions": []
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 57,
+        "subset": [
+          53,
+          54,
+          56,
+          57,
+          59,
+          60,
+          72,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "E",
+              "e"
+            ],
+            "target": 43
+          },
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 63
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 58,
+        "subset": [
+          67,
+          68,
+          70,
+          71,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 64
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 59,
+        "subset": [
+          63,
+          65,
+          66
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 58
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 60,
+        "subset": [
+          77,
+          78,
+          79,
+          81,
+          84,
+          85,
+          98,
+          99
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\""
+            ],
+            "target": 46
+          },
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 47
+          },
+          {
+            "symbols": [
+              "\\"
+            ],
+            "target": 48
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 61,
+        "subset": [
+          88,
+          89
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "target": 65
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": true,
+          "index": 2,
+          "kind": "COMMENT",
+          "name": "COMMENT_BLOCK",
+          "priority": 90
+        },
+        "id": 62,
+        "subset": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          27,
+          30,
+          31,
+          34,
+          35
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\\x0b",
+              "\\x0c",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "\"",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "\\",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 50
+          },
+          {
+            "symbols": [
+              "\\x0d"
+            ],
+            "target": 51
+          },
+          {
+            "symbols": [
+              "*"
+            ],
+            "target": 52
+          },
+          {
+            "symbols": [
+              "\n"
+            ],
+            "target": 53
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 63,
+        "subset": [
+          54,
+          55,
+          57,
+          59,
+          60,
+          72,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "E",
+              "e"
+            ],
+            "target": 43
+          },
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 63
+          }
+        ]
+      },
+      {
+        "accepting": {
+          "ignore": false,
+          "index": 3,
+          "kind": "NUMBER_LITERAL",
+          "name": "NUMBER_LITERAL",
+          "priority": 70
+        },
+        "id": 64,
+        "subset": [
+          68,
+          69,
+          71,
+          73,
+          74
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "_"
+            ],
+            "target": 64
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 65,
+        "subset": [
+          90,
+          91
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "target": 66
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 66,
+        "subset": [
+          92,
+          93
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "target": 67
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 67,
+        "subset": [
+          94,
+          95
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "target": 68
+          }
+        ]
+      },
+      {
+        "accepting": null,
+        "id": 68,
+        "subset": [
+          77,
+          78,
+          79,
+          81,
+          85,
+          96,
+          98,
+          99
+        ],
+        "transitions": [
+          {
+            "symbols": [
+              "\""
+            ],
+            "target": 46
+          },
+          {
+            "symbols": [
+              "\\x00",
+              "\\x01",
+              "\\x02",
+              "\\x03",
+              "\\x04",
+              "\\x05",
+              "\\x06",
+              "\\x07",
+              "\\x08",
+              "\t",
+              "\n",
+              "\\x0b",
+              "\\x0c",
+              "\\x0d",
+              "\\x0e",
+              "\\x0f",
+              "\\x10",
+              "\\x11",
+              "\\x12",
+              "\\x13",
+              "\\x14",
+              "\\x15",
+              "\\x16",
+              "\\x17",
+              "\\x18",
+              "\\x19",
+              "\\x1a",
+              "\\x1b",
+              "\\x1c",
+              "\\x1d",
+              "\\x1e",
+              "\\x1f",
+              " ",
+              "!",
+              "#",
+              "$",
+              "%",
+              "&",
+              "'",
+              "(",
+              ")",
+              "*",
+              "+",
+              ",",
+              "-",
+              ".",
+              "/",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              ":",
+              ";",
+              "<",
+              "=",
+              ">",
+              "?",
+              "@",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z",
+              "[",
+              "]",
+              "^",
+              "_",
+              "`",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "{",
+              "|",
+              "}",
+              "~",
+              "\\x7f"
+            ],
+            "target": 47
+          },
+          {
+            "symbols": [
+              "\\"
+            ],
+            "target": 48
+          }
+        ]
+      }
+    ]
+  },
   "trans": {
     "0": {
       "\t": 2,

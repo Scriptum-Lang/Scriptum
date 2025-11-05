@@ -1,4 +1,4 @@
-# AFD Final (Mermaid)
+# AFD Geral (Mermaid)
 
 ```mermaid
 graph LR

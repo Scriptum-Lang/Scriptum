@@ -8,7 +8,7 @@ from scriptum.lexer.lexer import ScriptumLexer
 from scriptum.regex.builder import AutomataBuilder
 from scriptum.text import SourceFile
 
-EXAMPLES_ROOT = Path(__file__).resolve().parents[2] / "examples"
+EXAMPLES_ROOT = Path(__file__).resolve().parents[1] / "examples"
 
 
 def _load_source(relative: Path) -> SourceFile:
@@ -121,3 +121,9 @@ def test_line_and_block_comments_are_ignored() -> None:
     tokens_out = _tokenize_inline(snippet)
     assert all(tok.kind is not tokens.TokenKind.COMMENT for tok in tokens_out)
     assert [tok.lexeme for tok in tokens_out] == ["mutabilis", "numerus", "a", "=", "1", "perge", "=", "2", ";"]
+
+
+def test_unicode_identifier_is_normalised() -> None:
+    tokens_out = _tokenize_inline("impressão = 1")
+    identifiers = [tok.lexeme for tok in tokens_out if tok.kind is tokens.TokenKind.IDENTIFIER]
+    assert identifiers == ["impress", "o"]
