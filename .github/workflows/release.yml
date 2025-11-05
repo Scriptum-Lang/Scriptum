@@ -55,10 +55,12 @@ jobs:
         run: pyinstaller -F -n scriptum --additional-hooks-dir hooks --collect-data scriptum --collect-submodules scriptum src/scriptum/driver.py
 
       - name: Prepare binary artifact
-        shell: bash
+        shell: python
         run: |
-          python - <<'PY'
-          import pathlib, shutil, sys
+          import pathlib
+          import shutil
+          import sys
+
           artifacts = pathlib.Path("artifacts")
           artifacts.mkdir(exist_ok=True)
           binary_name = "scriptum.exe" if sys.platform.startswith("win") else "scriptum"
@@ -66,7 +68,6 @@ jobs:
           if not src.exists():
               raise SystemExit(f"Expected binary {src} not found")
           shutil.copy2(src, artifacts / binary_name)
-          PY
 
       - name: Smoke test --version (Unix)
         if: runner.os != 'Windows'
@@ -117,11 +118,11 @@ jobs:
           Remove-Item -Recurse -Force $pkgDir
 
       - name: Generate SHA256 sums
-        shell: bash
+        shell: python
         run: |
-          python - <<'PY'
           import hashlib
           import pathlib
+
           artifacts = pathlib.Path("artifacts")
           sha_path = artifacts / "SHA256SUMS"
           files = sorted(p for p in artifacts.iterdir() if p.is_file() and p.name != "SHA256SUMS")
@@ -129,7 +130,6 @@ jobs:
               for file in files:
                   digest = hashlib.sha256(file.read_bytes()).hexdigest()
                   handle.write(f"{digest}  {file.name}\n")
-          PY
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
