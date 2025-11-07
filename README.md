@@ -35,13 +35,26 @@ scriptum --help
 
 ## Uso rapido
 
-Experimente o parser com o exemplo incluido:
+Alguns exemplos rápidos:
 
 ```bash
-scriptum parse examples/hello.stm
+# executa diretamente um arquivo .stm
+scriptum examples/hello.stm
+
+# roda explicitamente (equivalente ao comando acima)
+scriptum run examples/hello.stm
+
+# executa código inline e módulos
+scriptum -c "redde 42;"
+scriptum run -m exemplos.basico
+
+# ferramentas úteis
+scriptum check examples/err/type_mismatch.stm --json
+scriptum fmt examples/ok/control_flow.stm
+scriptum dev lex examples/hello.stm
 ```
 
-Tambem e possivel tokenizar (`lex`) ou checar semantica (`sema`) se a build incluir esses subcomandos.
+Todos os utilitários de inspeção (lexer, AST, IR, geração de tabelas) vivem agora em `scriptum dev <subcomando>`, mantendo compatibilidade com os nomes antigos até a v0.4.0 (expostos via `scriptum-classic` ou `python -m scriptum.driver`).
 
 ## Suporte de SO
 

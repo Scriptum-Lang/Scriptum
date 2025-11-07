@@ -1,6 +1,6 @@
 # Fluxo completo do compilador Scriptum
 
-Este documento descreve, etapa por etapa, como o projeto Scriptum transforma um arquivo `.stm` em estruturas internas prontas para analise, geracao de codigo ou outras ferramentas. Cada fase aponta para os modulos Python correspondentes dentro de `src/scriptum`.
+Este documento descreve, etapa por etapa, como o projeto Scriptum transforma um arquivo `.stm` em estruturas internas prontas para analise, geracao de codigo ou execucao. Cada fase aponta para os modulos Python correspondentes dentro de `src/scriptum`.
 
 ## 1. Entrada de texto
 
@@ -28,13 +28,13 @@ Embora o driver ainda nao exponha o *build* automatico, o repositorio inclui o p
 - Palavras reservadas (lista `KEYWORDS`) promovem identificadores para `TokenKind.KEYWORD`.
 - Tokens com `ignore=True` (espacos e comentarios) sao descartados quando `LexerConfig.skip_whitespace` esta habilitado.
 
-## 4. Construacao da AST
+## 4. Construcao da AST
 
 - O `ScriptumParser` (`parser/parser.py`) consome a lista de tokens:
   - Declaracoes de topo sao analisadas por funcoes dedicadas (`_parse_function_declaration`, `_parse_variable_declaration`).
   - Expressoes usam um Pratt parser parametrizado por `binding_powers` (`parser/precedence.py`), garantindo precedencia e associatividade corretas.
-  - Cada no AST eh instanciado a partir de `ast/nodes.py` com `node_id` incremental e span correspondente.
-- O resultado final eh um `nodes.Module` contendo todas as declaracoes.
+  - Cada no AST e instanciado a partir de `ast/nodes.py` com `node_id` incremental e span correspondente.
+- O resultado final e um `nodes.Module` contendo todas as declaracoes.
 
 ## 5. Analise semantica
 
@@ -43,12 +43,12 @@ Embora o driver ainda nao exponha o *build* automatico, o repositorio inclui o p
   - Converte anotacoes de tipo em objetos `Type` (`sema/types.py`) e valida atribuicoes, retornos e uso de identificadores.
   - Acumula `SemanticDiagnostic` com mensagens e spans quando encontra erros.
 
-## 6. IR, pretty-printer e execução
+## 6. IR, pretty-printer e execucao
 
 - `ir/lowering.py` converte `nodes.Module` em `ModuleIr`, preservando spans e estrutura.
-- `codegen/generate.py` garante o lowering (quando necessário) e chama `codegen/emitter.py`, produzindo `formatted` + `ModuleIr`.
+- `codegen/generate.py` garante o lowering (quando necessario) e chama `codegen/emitter.py`, produzindo `formatted` + `ModuleIr`.
 - `ir/interpreter.py` executa o IR resultante (mini VM). O comando `scriptum run` percorre lex/parse/sema/IR e chama o interpretador, retornando o valor de `main()`.
-- `scriptum fmt` usa o mesmo pipeline até o IR e grava o código formatado somente quando há mudanças.
+- `scriptum fmt` usa o mesmo pipeline ate o IR e grava o codigo formatado somente quando ha mudancas.
 
 ## 7. Resumo do pipeline
 
@@ -61,3 +61,12 @@ SourceFile -> Lexer (DFA tables) -> Tokens
 ```
 
 Use esta visao como guia ao navegar pelo repositorio ou implementar novas features. Cada etapa publica APIs claras para facilitar testes isolados.
+
+## 8. Comandos de CLI (v0.3.2)
+
+- **Execucao**: `scriptum arquivo.stm`, `scriptum run`, `scriptum -c`, `scriptum -m`, `scriptum repl`.
+- **Build/qualidade**: `scriptum build`, `scriptum package`, `scriptum check`, `scriptum fmt`, `scriptum test`, `scriptum doc build|serve`.
+- **Ferramentas de inspecao**: `scriptum dev lex|ast|ir|tokens|build-lexer|bench`.
+- **Compatibilidade**: `scriptum lex|parse|sema|ir|compile|build-lexer` permanecem disponiveis com aviso ate a v0.4.0.
+
+Todos os comandos utilizam `CompilerDriver` como orquestrador; a CLI moderna apenas reorganiza a experiencia, preservando o pipeline descrito nas secoes anteriores.

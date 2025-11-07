@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scriptum"
-version = "0.3.1"
+version = "0.3.2"
 description = "Scriptum language toolchain (lexer, parser, sema; standalone builds)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,6 +13,7 @@ authors = [{ name = "Scriptum Team" }]
 dependencies = [
     "click>=8.1",
     "typing-extensions>=4.8",
+    "pyfiglet>=0.8",
 ]
 
 [project.optional-dependencies]
@@ -23,7 +24,8 @@ dev = [
 ]
 
 [project.scripts]
-scriptum = "scriptum.driver:main"
+scriptum = "scriptum.cli:main"
+scriptum-classic = "scriptum.driver:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

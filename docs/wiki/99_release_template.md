@@ -1,33 +1,36 @@
 # Release checklist
 
-Use estas etapas para preparar uma nova versão do Scriptum com artefatos funcionais em Windows, macOS e Linux.
+Use estas etapas para preparar uma nova versao do Scriptum com artefatos funcionais em Windows, macOS e Linux.
 
-1. **Atualizar versão**
-   - Ajuste `src/scriptum/__init__.py` e `pyproject.toml` com a nova versão.
-   - Acrescente uma seção correspondente em `CHANGELOG.md`.
-   - Faça commit das mudanças e crie uma tag (`git tag vX.Y.Z`).
+1. **Atualizar versao**
+   - Ajuste `src/scriptum/__init__.py`, `src/scriptum/driver.py` e `pyproject.toml`.
+   - Atualize `README.md`, `docs/wiki` (especialmente `07_fluxo_compilador.md`) e `scripts/smoke_local.*` quando houver mudancas no CLI.
+   - Acrescente uma secao correspondente em `CHANGELOG.md`.
+   - Faca commit das mudancas e crie uma tag (`git tag vX.Y.Z`).
 
-2. **Sincronizar dependências**
+2. **Sincronizar dependencias**
    ```bash
    uv pip compile pyproject.toml -o requirements.txt
    uv sync --extra dev
    uv run pytest
    ```
 
-3. **Gerar distribuições**
+3. **Gerar distribuicoes**
    ```bash
    uv build
    ls dist/
    ```
 
-4. **Validar instalação local**
+4. **Validar instalacao local**
    ```bash
    python -m venv .release-check
    .release-check/Scripts/activate       # Windows
    source .release-check/bin/activate    # macOS/Linux
    pip install dist/scriptum-X.Y.Z-py3-none-any.whl
    scriptum --help
-   python -m scriptum lex examples/ok/loops_and_funcs.stm
+   scriptum dev lex examples/ok/loops_and_funcs.stm
+   scriptum check examples/err/type_mismatch.stm --json
+   scriptum -c "redde 42;"
    ```
 
 5. **Publicar release**
@@ -36,5 +39,5 @@ Use estas etapas para preparar uma nova versão do Scriptum com artefatos funcio
    - Opcional: publique no PyPI com `uv publish` (exige credenciais configuradas).
 
 6. **Divulgar notas**
-   - Copie os tópicos de `CHANGELOG.md` para a descrição da release.
+   - Copie os topicos de `CHANGELOG.md` para a descricao da release.
    - Informe que a release foi testada em Windows, macOS e Linux utilizando `uv` e `pipx`.

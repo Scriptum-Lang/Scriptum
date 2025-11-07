@@ -7,4 +7,4 @@ Provides access to the high-level `CompilerDriver` and exposes package metadata.
 from .driver import CompilerDriver
 
 __all__ = ["CompilerDriver"]
-__version__ = "0.3.1"
+__version__ = "0.3.2"

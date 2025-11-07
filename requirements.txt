@@ -4,5 +4,7 @@ click==8.3.0
     # via scriptum (pyproject.toml)
 colorama==0.4.6
     # via click
+pyfiglet==1.0.4
+    # via scriptum (pyproject.toml)
 typing-extensions==4.15.0
     # via scriptum (pyproject.toml)

@@ -10,10 +10,7 @@ if (-not (Test-Path $binary)) {
 
 & $binary --version
 & $binary --help
-& $binary lex (Join-Path $scriptDir "..\examples\hello.stm")
-& $binary parse (Join-Path $scriptDir "..\examples\hello.stm")
-
-$helpOutput = & $binary --help
-if ($helpOutput -match "sema") {
-    & $binary sema (Join-Path $scriptDir "..\examples\hello.stm")
-}
+& $binary (Join-Path $scriptDir "..\examples\hello.stm")
+& $binary dev lex (Join-Path $scriptDir "..\examples\hello.stm")
+& $binary dev ast (Join-Path $scriptDir "..\examples\hello.stm")
+& $binary check (Join-Path $scriptDir "..\examples\err\type_mismatch.stm") --json

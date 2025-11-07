@@ -12,9 +12,7 @@ fi
 
 "$BIN" --version
 "$BIN" --help
-"$BIN" lex "${SCRIPT_DIR}/../examples/hello.stm"
-"$BIN" parse "${SCRIPT_DIR}/../examples/hello.stm"
-
-if "$BIN" --help | grep -q "sema"; then
-  "$BIN" sema "${SCRIPT_DIR}/../examples/hello.stm"
-fi
+"$BIN" "${SCRIPT_DIR}/../examples/hello.stm"
+"$BIN" dev lex "${SCRIPT_DIR}/../examples/hello.stm"
+"$BIN" dev ast "${SCRIPT_DIR}/../examples/hello.stm"
+"$BIN" check "${SCRIPT_DIR}/../examples/err/type_mismatch.stm" --json

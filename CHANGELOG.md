@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.2] - 2025-11-05
+
+### Added
+- Nova hierarquia de comandos `scriptum` alinhada a CLIs modernas: `run`, `build`, `package`, `check`, `fmt`, `test`, `doc` e grupo `dev`.
+- Execuções rápidas (`scriptum arquivo.stm`, `scriptum -c`, `scriptum -m`) e REPL experimental.
+- Documentação servível via `scriptum doc build/serve` e suporte a `scriptum package` (PyInstaller).
+- Alias de compatibilidade (`scriptum lex|parse|sema|ir|compile|build-lexer`) com avisos até a v0.4.0.
+
+### Changed
+- `scriptum dev <subcmd>` passou a agrupar ferramentas de inspeção (lex, AST, IR, tokens, build-lexer, bench).
+- Scripts de smoke-test, README, wiki e exemplos foram atualizados para refletir o novo fluxo.
+- Versão do projeto atualizada para `0.3.2`.
+
+### Fixed
+- Mensagens de erros e diagnósticos agora são consistentes entre os novos comandos de alto nível e os utilitários em `dev`.
+
 ## [0.3.1] - 2025-11-05
 
 ### Added
