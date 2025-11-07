@@ -23,14 +23,21 @@ Use estas etapas para preparar uma nova versao do Scriptum com artefatos funcion
 
 4. **Validar instalacao local**
    ```bash
-   python -m venv .release-check
-   .release-check/Scripts/activate       # Windows
-   source .release-check/bin/activate    # macOS/Linux
-   pip install dist/scriptum-X.Y.Z-py3-none-any.whl
-   scriptum --help
-   scriptum dev lex examples/ok/loops_and_funcs.stm
-   scriptum check examples/err/type_mismatch.stm --json
-   scriptum -c "redde 42;"
+   uv venv .release-check
+   uv pip install --python .release-check/bin/python dist/scriptum-X.Y.Z-py3-none-any.whl          # Linux/macOS
+   uv pip install --python .release-check/Scripts/python.exe dist/scriptum-X.Y.Z-py3-none-any.whl  # Windows
+
+   # Linux/macOS
+   .release-check/bin/scriptum --help
+   .release-check/bin/scriptum dev lex examples/ok/loops_and_funcs.stm
+   .release-check/bin/scriptum check examples/err/type_mismatch.stm --json
+   .release-check/bin/scriptum -c "redde 42;"
+
+   # Windows
+   .release-check/Scripts/scriptum.exe --help
+   .release-check/Scripts/scriptum.exe dev lex examples/ok/loops_and_funcs.stm
+   .release-check/Scripts/scriptum.exe check examples/err/type_mismatch.stm --json
+   .release-check/Scripts/scriptum.exe -c "redde 42;"
    ```
 
 5. **Publicar release**

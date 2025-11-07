@@ -1,28 +1,28 @@
-# Etapa 03 ó LÈxico e geraÁ„o do AFD
-
-## Tokens definidos
-- Literais b·sicos: `IDENTIFIER`, `NUMBER_LITERAL`, `STRING_LITERAL`.
-- Palavras-chave latinas (`TokenKind.KEYWORD`): `mutabilis`, `constans`, `functio`, `structura`, `si`, `aliter`, `dum`, `pro`, `in`, `de`, `redde`, `frange`, `perge`, `verum`, `falsum`, `nullum`, `indefinitum`, `numerus`, `textus`, `booleanum`, `vacuum`, `quodlibet`.
-- Operadores (`TokenKind.OPERATOR`): `===`, `!==`, `==`, `!=`, `??`, `?:`, `||`, `&&`, `>=`, `<=`, `>`, `<`, `**`, `+`, `-`, `*`, `/`, `%`, `!`, `=`, `.`.
-- PontuaÁ„o e delimitadores: `::`, `->`, `=>`, `,`, `;`, `:`, `?`, `(`, `)`, `{`, `}`, `[`, `]`.
-- EspaÁos e coment·rios ignorados: `WHITESPACE`, `COMMENT_LINE`, `COMMENT_BLOCK`.
-
-## Alfabeto
-- Letras: `A-Z`, `a-z`, sublinhado `_` (para identificadores) e sÌmbolo `$`.
-- DÌgitos: `0-9` com `_` como separador interno.
-- SÌmbolos adicionais: `{ !, ", $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, [, ], {, |, } }`, contemplando operadores, pontuaÁ„o e delimitadores.
-
-## Gerar e inspecionar o AFD
-- Produza o JSON com as tabelas lÈxicas:
-  ```bash
-  python scripts/build_afd.py
-  ```
-- Para visualizar a saÌda no terminal, acrescente `--show`.
-- O arquivo `src/scriptum/lexer/tables.json` guarda todas as expressıes regulares, prioridades e metadados.
-
-## Testes manuais
-- ApÛs instalar as dependÍncias (`pip install -e ".[dev]"`), valide a especificaÁ„o:
-  ```bash
-  pytest -q tests/test_lexer_tokens.py
-  ```
-- O teste garante unicidade das palavras-chave, estrutura do JSON e presenÁa dos literais definidos.
+# Etapa 03 ‚Äî L√©xico e gera√ß√£o do AFD
+
+## Tokens definidos
+- Literais b√°sicos: `IDENTIFIER`, `NUMBER_LITERAL`, `STRING_LITERAL`.
+- Palavras-chave latinas (`TokenKind.KEYWORD`): `mutabilis`, `constans`, `functio`, `structura`, `si`, `aliter`, `dum`, `pro`, `in`, `de`, `redde`, `frange`, `perge`, `verum`, `falsum`, `nullum`, `indefinitum`, `numerus`, `textus`, `booleanum`, `vacuum`, `quodlibet`.
+- Operadores (`TokenKind.OPERATOR`): `===`, `!==`, `==`, `!=`, `??`, `?:`, `||`, `&&`, `>=`, `<=`, `>`, `<`, `**`, `+`, `-`, `*`, `/`, `%`, `!`, `=`, `.`.
+- Pontua√ß√£o e delimitadores: `::`, `->`, `=>`, `,`, `;`, `:`, `?`, `(`, `)`, `{`, `}`, `[`, `]`.
+- Espa√ßos e coment√°rios ignorados: `WHITESPACE`, `COMMENT_LINE`, `COMMENT_BLOCK`.
+
+## Alfabeto
+- Letras: `A-Z`, `a-z`, sublinhado `_` (para identificadores) e s√≠mbolo `$`.
+- D√≠gitos: `0-9` com `_` como separador interno.
+- S√≠mbolos adicionais: `{ !, ", $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, [, ], {, |, } }`, contemplando operadores, pontua√ß√£o e delimitadores.
+
+## Gerar e inspecionar o AFD
+- Produza o JSON com as tabelas l√©xicas:
+  ```bash
+  python scripts/build_afd.py
+  ```
+- Para visualizar a sa√≠da no terminal, acrescente `--show`.
+- O arquivo `src/scriptum/lexer/tables.json` guarda todas as express√µes regulares, prioridades e metadados.
+
+## Testes manuais
+- Ap√≥s instalar as depend√™ncias (`uv sync --extra dev`), valide a especifica√ß√£o:
+  ```bash
+  pytest -q tests/test_lexer_tokens.py
+  ```
+- O teste garante unicidade das palavras-chave, estrutura do JSON e presen√ßa dos literais definidos.

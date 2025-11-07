@@ -21,6 +21,10 @@ dev = [
     "pytest>=7.4",
     "black>=24.0",
     "ruff>=0.5",
+    "pyinstaller>=6.11",
+]
+package = [
+    "pyinstaller>=6.11",
 ]
 
 [project.scripts]

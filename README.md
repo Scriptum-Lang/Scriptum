@@ -70,29 +70,21 @@ Lexer, parser e analise semantica estao estaveis para programas pequenos. A gera
 
 ## Build local para dev
 
-1. **Criar ambiente e instalar dependencias**
-
-   - `pipx install poetry` ou `pipx install hatch` (opcional)  
-   - Alternativamente, use `python -m venv .venv && source .venv/bin/activate` (Linux/macOS) ou `.venv\Scripts\activate` (Windows).
-
-2. **Instalar o projeto para desenvolvimento**
+1. **Sincronizar dependencias com uv**
 
    ```bash
-   pip install -e ".[dev]"
+   uv venv                      # cria .venv/
+   uv sync --extra dev          # instala deps + ferramentas (pytest, black, pyinstaller, etc.)
    ```
 
-   ou com `pipx`:
+   Nao e necessario ativar manualmente a venv; basta prefixar os comandos com `uv run`.
+
+2. **Gerar o binario standalone**
 
    ```bash
-   pipx runpip scriptum install -e ".[dev]"
+   uv run scriptum package
    ```
 
-3. **Executar PyInstaller (gerando binario local)**
-
-   ```bash
-   pyinstaller -F -n scriptum --additional-hooks-dir hooks --collect-data scriptum src/scriptum/driver.py
-   ```
-
-   O resultado ficara em `dist/scriptum` (`dist/scriptum.exe` no Windows). Utilize os scripts `scripts/smoke_local.sh` ou `scripts/smoke_local.ps1` para smoke tests rapidos do binario recem-gerado.
+   O comando gera automaticamente `build/scriptum.spec` apontando para o CLI moderno (`python -m scriptum`), executa o PyInstaller e coloca o artefato em `dist/scriptum` (`dist/scriptum.exe` no Windows). Utilize `scripts/smoke_local.sh` ou `scripts/smoke_local.ps1` para validações rápidas. Caso precise ajustar a spec manualmente, use `uv run scriptum package --spec caminho/customizado.spec`.
 
 Para mais detalhes sobre estrutura de diretorios e documentacao tecnica, consulte a pasta `docs/` e os exemplos em `examples/`.

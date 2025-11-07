@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from typing import Any, Optional
@@ -334,17 +335,131 @@ def _write_payload(payload: str, destination: Optional[pathlib.Path]) -> None:
 @click.option(
     "--spec",
     type=click.Path(dir_okay=False, path_type=pathlib.Path),
-    default=pathlib.Path("scriptum.spec"),
-    show_default=True,
+    default=None,
+    show_default=False,
+    help="Optional path to an existing PyInstaller spec file. "
+    "When omitted, a fresh spec is generated under build/scriptum.spec.",
 )
 @click.option("--pyinstaller", default="pyinstaller", show_default=True, help="PyInstaller executable to invoke.")
-def package_cmd(spec: pathlib.Path, pyinstaller: str) -> None:
-    if not spec.exists():
-        raise click.UsageError(f"PyInstaller spec file not found: {spec}")
-    cmd = [pyinstaller, "--clean", "--noconfirm", str(spec)]
+def package_cmd(spec: pathlib.Path | None, pyinstaller: str) -> None:
+    project_root = _locate_project_root()
+    default_spec_path = project_root / "build" / "scriptum.spec"
+    spec_path = spec or default_spec_path
+    if not spec_path.is_absolute():
+        spec_path = pathlib.Path.cwd() / spec_path
+
+    should_regenerate = spec is None or not spec_path.exists()
+    if should_regenerate:
+        spec_path = _generate_pyinstaller_spec(spec_path, project_root)
+        click.echo(f"Generated PyInstaller spec at {spec_path}")
+    elif not spec_path.exists():
+        raise click.UsageError(f"PyInstaller spec file not found: {spec_path}")
+
+    cmd = [pyinstaller, "--clean", "--noconfirm", str(spec_path)]
     click.echo(" ".join(cmd))
     subprocess.run(cmd, check=True)
     click.echo("Package generated under ./dist")
+
+
+def _locate_project_root() -> pathlib.Path:
+    candidates = [pathlib.Path.cwd(), pathlib.Path(__file__).resolve().parent]
+    seen: set[pathlib.Path] = set()
+
+    for base in candidates:
+        for candidate in (base, *base.parents):
+            resolved = candidate.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            if (resolved / "pyproject.toml").exists():
+                return resolved
+    raise click.ClickException("Unable to locate project root. Run inside the repository or pass --spec.")
+
+
+def _generate_pyinstaller_spec(spec_path: pathlib.Path, project_root: pathlib.Path) -> pathlib.Path:
+    spec_path = spec_path.resolve()
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+
+    entry_path = spec_path.parent / "_scriptum_cli_entry.py"
+    entry_path.write_text(
+        textwrap.dedent(
+            """
+            import runpy
+
+            if __name__ == "__main__":
+                runpy.run_module("scriptum", run_name="__main__", alter_sys=True)
+            """
+        ).strip()
+        + "\n",
+        encoding="utf8",
+    )
+
+    src_dir = project_root / "src"
+    package_dir = src_dir / "scriptum"
+    if not package_dir.exists():
+        package_dir = pathlib.Path(__file__).resolve().parent
+    pathex = [package_dir.parent.resolve()]
+
+    hooks_dir = project_root / "hooks"
+    hook_paths = [hooks_dir.resolve()] if hooks_dir.exists() else []
+
+    spec_body = textwrap.dedent(
+        f"""
+        # -*- mode: python ; coding: utf-8 -*-
+        from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+
+        block_cipher = None
+
+        datas = collect_data_files('scriptum')
+        hiddenimports = collect_submodules('scriptum')
+
+        a = Analysis(
+            [{repr(str(entry_path))}],
+            pathex={_format_path_list(pathex)},
+            binaries=[],
+            datas=datas,
+            hiddenimports=hiddenimports,
+            hookspath={_format_path_list(hook_paths)},
+            hooksconfig={{}},
+            runtime_hooks=[],
+            excludes=[],
+            noarchive=False,
+            optimize=0,
+        )
+        pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+        exe = EXE(
+            pyz,
+            a.scripts,
+            a.binaries,
+            a.datas,
+            [],
+            name='scriptum',
+            debug=False,
+            bootloader_ignore_signals=False,
+            strip=False,
+            upx=True,
+            upx_exclude=[],
+            runtime_tmpdir=None,
+            console=True,
+            disable_windowed_traceback=False,
+            argv_emulation=False,
+            target_arch=None,
+            codesign_identity=None,
+            entitlements_file=None,
+        )
+        """
+    ).strip() + "\n"
+
+    spec_path.write_text(spec_body, encoding="utf8")
+    return spec_path
+
+
+def _format_path_list(paths: list[pathlib.Path]) -> str:
+    if not paths:
+        return "[]"
+    literal = ", ".join(repr(str(path.resolve())) for path in paths)
+    return f"[{literal}]"
 
 
 def _perform_semantic_check(source: pathlib.Path, json_output: bool, quiet_success: bool = False) -> bool:

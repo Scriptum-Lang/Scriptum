@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  UV_CACHE_DIR: .uv-cache
+
 jobs:
   build:
     name: Build and Package (${{ matrix.os }})
@@ -22,37 +25,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up UV
+        uses: astral-sh/setup-uv@v2
         with:
           python-version: "3.11"
 
-      - name: Install build dependencies
-        run: python -m pip install --upgrade pip build wheel pyinstaller
-
-      - name: Install project
-        run: pip install -e .
+      - name: Sync dependencies
+        run: uv sync --extra dev --extra package
 
       - name: Run tests (if available)
         shell: bash
         run: |
-          if command -v pytest >/dev/null 2>&1; then
-            set +e
-            pytest -q
-            status=$?
-            set -e
-            if [ "$status" -eq 5 ]; then
-              echo "Pytest: no tests collected."
-            elif [ "$status" -ne 0 ]; then
-              echo "Pytest failed with exit code $status."
-              exit "$status"
-            fi
-          else
-            echo "Pytest not installed; skipping."
+          set +e
+          uv run pytest -q
+          status=$?
+          set -e
+          if [ "$status" -eq 5 ]; then
+            echo "Pytest: no tests collected."
+          elif [ "$status" -ne 0 ]; then
+            echo "Pytest failed with exit code $status."
+            exit "$status"
           fi
 
       - name: Build standalone binary
-        run: pyinstaller -F -n scriptum --additional-hooks-dir hooks --collect-data scriptum --collect-submodules scriptum src/scriptum/driver.py
+        run: uv run scriptum package
 
       - name: Prepare binary artifact
         shell: python
