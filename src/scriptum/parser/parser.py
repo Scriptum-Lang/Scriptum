@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
+import re
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple
+
+from ll1calc.first_follow import EPSILON as LL1_EPSILON
+from ll1calc.lexer import LexerError as LL1LexerError
+from ll1calc.parser import LL1Parser, ParseError as LL1ParseError, ParseTreeNode as LL1ParseTreeNode
 
 from .. import errors, text, tokens
 from ..ast import nodes
@@ -35,6 +40,48 @@ class ParserConfig:
     max_depth: int = 2048
 
 
+@dataclass(slots=True)
+class ParserTraceNode:
+    """Lightweight tree node used for parser instrumentation."""
+
+    label: str
+    span: Span
+    lexeme: str | None = None
+    children: List["ParserTraceNode"] = field(default_factory=list)
+
+    def pretty(self, indent: int = 0) -> str:
+        label = self.label
+        if self.lexeme:
+            label += f" [{self.lexeme}]"
+        lines = [" " * indent + label]
+        for child in self.children:
+            lines.append(child.pretty(indent + 2))
+        return "\n".join(lines)
+
+
+@dataclass(slots=True)
+class ParserTrace:
+    """Holds optional instrumentation results for ScriptumParser."""
+
+    expression_trees: List[ParserTraceNode] = field(default_factory=list)
+    productions: List[str] = field(default_factory=list)
+
+    def add_expression(self, node: ParserTraceNode) -> None:
+        self.expression_trees.append(node)
+
+    def log(self, entry: str) -> None:
+        self.productions.append(entry)
+
+
+@dataclass(slots=True)
+class _LL1Trace:
+    tree: LL1ParseTreeNode
+    derivations: List[str]
+
+
+_LL1_ALLOWED_RE = re.compile(r"^[0-9+\-*/()\s]+$")
+
+
 class ScriptumParser:
     """Parses Scriptum source code into an AST module."""
 
@@ -46,19 +93,29 @@ class ScriptumParser:
         self._node_counter: int = 0
         self._source: Optional[text.SourceFile] = None
         self._depth: int = 0
+        self._expr_call_depth: int = 0
+        self._trace: ParserTrace | None = None
+        self._ll1_traces: Dict[int, _LL1Trace] = {}
+        self._ll1_parser: LL1Parser | None = None
 
     # Public API -----------------------------------------------------------------
 
-    def parse(self, source: text.SourceFile) -> nodes.Module:
+    def parse(self, source: text.SourceFile, trace: ParserTrace | None = None) -> nodes.Module:
         self._source = source
         self._tokens = self._lexer.tokenize(source)
         self._index = 0
         self._node_counter = 0
+        self._expr_call_depth = 0
+        self._trace = trace
+        self._ll1_traces = {}
         declarations: List[nodes.Declaration] = []
-        while not self._is_at_end():
-            declarations.append(self._parse_declaration(global_scope=True))
-        module_span = Span(0, len(source.text))
-        return nodes.Module(node_id=self._next_id(), span=module_span, declarations=declarations)
+        try:
+            while not self._is_at_end():
+                declarations.append(self._parse_declaration(global_scope=True))
+            module_span = Span(0, len(source.text))
+            return nodes.Module(node_id=self._next_id(), span=module_span, declarations=declarations)
+        finally:
+            self._trace = None
 
     # Declaration parsing --------------------------------------------------------
 
@@ -288,6 +345,7 @@ class ScriptumParser:
 
     def _parse_expression(self, min_bp: int = 0) -> nodes.Expression:
         self._enter_depth()
+        self._expr_call_depth += 1
         try:
             expr = self._parse_prefix()
 
@@ -297,12 +355,18 @@ class ScriptumParser:
 
                 if self._match_symbol("("):
                     expr = self._finish_call(expr)
+                    if self._trace is not None:
+                        self._trace.log(f"CALL {expr.span.start}:{expr.span.end}")
                     continue
                 if self._match_symbol("["):
                     expr = self._finish_index(expr)
+                    if self._trace is not None:
+                        self._trace.log(f"INDEX {expr.span.start}:{expr.span.end}")
                     continue
                 if self._match_symbol("."):
                     expr = self._finish_member(expr)
+                    if self._trace is not None:
+                        self._trace.log(f"MEMBER {expr.span.start}:{expr.span.end}")
                     continue
 
                 token = self._peek()
@@ -324,6 +388,8 @@ class ScriptumParser:
                         consequent=true_expr,
                         alternate=false_expr,
                     )
+                    if self._trace is not None:
+                        self._trace.log(f"TERNARY {expr.span.start}:{expr.span.end}")
                     continue
 
                 right = self._parse_expression(binding[1])
@@ -335,6 +401,8 @@ class ScriptumParser:
                         target=expr,
                         value=right,
                     )
+                    if self._trace is not None:
+                        self._trace.log(f"ASSIGN {span.start}:{span.end}")
                 else:
                     expr = nodes.BinaryExpression(
                         node_id=self._next_id(),
@@ -343,9 +411,189 @@ class ScriptumParser:
                         left=expr,
                         right=right,
                     )
+                    if self._trace is not None:
+                        self._trace.log(f"BINARY {operator_token.lexeme} {span.start}:{span.end}")
+
+            expr = self._maybe_delegate_to_ll1(expr, min_bp)
+            if self._trace is not None and self._expr_call_depth == 1:
+                self._record_expression_trace(expr)
             return expr
         finally:
+            self._expr_call_depth = max(0, self._expr_call_depth - 1)
             self._leave_depth()
+
+    def _record_expression_trace(self, expr: nodes.Expression) -> None:
+        if self._trace is None:
+            return
+        node = self._expression_to_trace(expr)
+        self._trace.add_expression(node)
+        ll1_info = self._ll1_traces.get(expr.node_id)
+        if ll1_info:
+            self._trace.productions.extend(ll1_info.derivations)
+        else:
+            self._trace.log(f"EXPR {type(expr).__name__} {expr.span.start}:{expr.span.end}")
+
+    def _expression_to_trace(self, expr: nodes.Expression) -> ParserTraceNode:
+        label = type(expr).__name__
+        lexeme: str | None = None
+        children: List[ParserTraceNode] = []
+
+        if isinstance(expr, nodes.Literal):
+            lexeme = expr.raw
+        elif isinstance(expr, nodes.Identifier):
+            lexeme = expr.name
+        elif isinstance(expr, nodes.BinaryExpression):
+            lexeme = self._binary_symbol(expr.operator) or str(expr.operator)
+            children = [self._expression_to_trace(expr.left), self._expression_to_trace(expr.right)]
+        elif isinstance(expr, nodes.AssignmentExpression):
+            lexeme = "="
+            children = [self._expression_to_trace(expr.target), self._expression_to_trace(expr.value)]
+        elif isinstance(expr, nodes.ConditionalExpression):
+            lexeme = "?:"
+            children = [
+                self._expression_to_trace(expr.condition),
+                self._expression_to_trace(expr.consequent),
+                self._expression_to_trace(expr.alternate),
+            ]
+        elif isinstance(expr, nodes.CallExpression):
+            children = [self._expression_to_trace(expr.callee)] + [
+                self._expression_to_trace(argument) for argument in expr.arguments
+            ]
+        elif isinstance(expr, nodes.MemberExpression):
+            lexeme = expr.property
+            children = [self._expression_to_trace(expr.object)]
+        elif isinstance(expr, nodes.IndexExpression):
+            children = [self._expression_to_trace(expr.collection), self._expression_to_trace(expr.index)]
+        elif isinstance(expr, nodes.UnaryExpression):
+            lexeme = expr.operator.name if isinstance(expr.operator, nodes.UnaryOperator) else str(expr.operator)
+            children = [self._expression_to_trace(expr.operand)]
+        elif isinstance(expr, nodes.ArrayLiteral):
+            children = [self._expression_to_trace(element) for element in expr.elements]
+        elif isinstance(expr, nodes.ObjectLiteral):
+            for prop in expr.properties:
+                prop_node = ParserTraceNode(
+                    label="ObjectProperty",
+                    span=prop.span,
+                    lexeme=prop.key,
+                    children=[self._expression_to_trace(prop.value)],
+                )
+                children.append(prop_node)
+        return ParserTraceNode(label=label, span=expr.span, lexeme=lexeme, children=children)
+
+    def _maybe_delegate_to_ll1(self, expr: nodes.Expression, min_bp: int) -> nodes.Expression:
+        if self._source is None or not self._is_pure_arithmetic(expr):
+            return expr
+        snippet = self._source.slice(expr.span)
+        if not snippet or not _LL1_ALLOWED_RE.fullmatch(snippet):
+            return expr
+        if self._ll1_parser is None:
+            self._ll1_parser = LL1Parser()
+        try:
+            result = self._ll1_parser.parse(snippet)
+            rebuilt = self._ll1_tree_to_ast(result.tree, expr.span.start)
+        except (LL1LexerError, LL1ParseError, ParseError):
+            return expr
+        self._ll1_traces[rebuilt.node_id] = _LL1Trace(tree=result.tree, derivations=result.derivations)
+        return rebuilt
+
+    def _is_pure_arithmetic(self, expr: nodes.Expression) -> bool:
+        if isinstance(expr, nodes.BinaryExpression):
+            symbol = self._binary_symbol(expr.operator)
+            if symbol not in {"+", "-", "*", "/"}:
+                return False
+            return self._is_pure_arithmetic(expr.left) and self._is_pure_arithmetic(expr.right)
+        if isinstance(expr, nodes.Literal):
+            if isinstance(expr.value, int) and expr.raw.isdigit():
+                return True
+            return False
+        return False
+
+    def _ll1_tree_to_ast(self, node: LL1ParseTreeNode, offset: int) -> nodes.Expression:
+        if node.symbol != "E":
+            raise ParseError("LL(1) tree root must be 'E'.")
+
+        def build_e(current: LL1ParseTreeNode) -> nodes.Expression:
+            left = build_t(current.children[0])
+            return build_e_prime(current.children[1], left)
+
+        def build_e_prime(current: LL1ParseTreeNode, acc: nodes.Expression) -> nodes.Expression:
+            head = current.children[0]
+            if head.symbol == LL1_EPSILON:
+                return acc
+            operator_node = head
+            if operator_node.token is None:
+                raise ParseError("Missing operator token in LL(1) tree.")
+            right = build_t(current.children[1])
+            combined = self._make_binary_node(operator_node.token.lexeme, acc, right)
+            return build_e_prime(current.children[2], combined)
+
+        def build_t(current: LL1ParseTreeNode) -> nodes.Expression:
+            left = build_f(current.children[0])
+            return build_t_prime(current.children[1], left)
+
+        def build_t_prime(current: LL1ParseTreeNode, acc: nodes.Expression) -> nodes.Expression:
+            head = current.children[0]
+            if head.symbol == LL1_EPSILON:
+                return acc
+            operator_node = head
+            if operator_node.token is None:
+                raise ParseError("Missing operator token in LL(1) tree.")
+            right = build_f(current.children[1])
+            combined = self._make_binary_node(operator_node.token.lexeme, acc, right)
+            return build_t_prime(current.children[2], combined)
+
+        def build_f(current: LL1ParseTreeNode) -> nodes.Expression:
+            child = current.children[0]
+            if child.symbol == "(":
+                return build_e(current.children[1])
+            if child.symbol == "num":
+                if child.token is None:
+                    raise ParseError("Number node missing token.")
+                start = offset + child.token.position
+                end = start + len(child.token.lexeme)
+                span = Span(start, end)
+                value = int(child.token.lexeme)
+                return nodes.Literal(node_id=self._next_id(), span=span, value=value, raw=child.token.lexeme)
+            raise ParseError(f"Unexpected symbol {child.symbol!r} in LL(1) tree.")
+
+        return build_e(node)
+
+    def _make_binary_node(self, operator_symbol: str, left: nodes.Expression, right: nodes.Expression) -> nodes.BinaryExpression:
+        span = self._combine_spans(left.span, right.span)
+        return nodes.BinaryExpression(
+            node_id=self._next_id(),
+            span=span,
+            operator=self._binary_operator(operator_symbol),
+            left=left,
+            right=right,
+        )
+
+    def _binary_symbol(self, operator: nodes.BinaryOperator | str) -> str | None:
+        if isinstance(operator, nodes.BinaryOperator):
+            mapping = {
+                nodes.BinaryOperator.ADD: "+",
+                nodes.BinaryOperator.SUB: "-",
+                nodes.BinaryOperator.MUL: "*",
+                nodes.BinaryOperator.DIV: "/",
+                nodes.BinaryOperator.MOD: "%",
+                nodes.BinaryOperator.POW: "**",
+                nodes.BinaryOperator.GT: ">",
+                nodes.BinaryOperator.LT: "<",
+                nodes.BinaryOperator.GE: ">=",
+                nodes.BinaryOperator.LE: "<=",
+                nodes.BinaryOperator.EQ: "==",
+                nodes.BinaryOperator.NE: "!=",
+                nodes.BinaryOperator.STRICT_EQ: "===",
+                nodes.BinaryOperator.STRICT_NE: "!==",
+                nodes.BinaryOperator.AND: "&&",
+                nodes.BinaryOperator.OR: "||",
+                nodes.BinaryOperator.NULLISH: "??",
+                nodes.BinaryOperator.ACCESS: ".",
+            }
+            return mapping.get(operator)
+        if isinstance(operator, str):
+            return operator
+        return None
 
     def _parse_prefix(self) -> nodes.Expression:
         token = self._advance()
