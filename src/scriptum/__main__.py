@@ -1,6 +1,6 @@
 """Module entry point to invoke the Scriptum CLI with `python -m scriptum`."""
 
-from .cli import main
+from scriptum.cli import main
 
 
 def run() -> None:
