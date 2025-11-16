@@ -1,4 +1,4 @@
 // ERROR: PAR102
-functio main() {
+functio principalis() {
     mutabilis numerus x = si;
 }

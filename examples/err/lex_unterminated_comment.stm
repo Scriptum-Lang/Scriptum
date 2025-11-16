@@ -1,4 +1,4 @@
 // ERROR: LEX002
-functio main() {
+functio principalis() {
     /* comentario sem fim
 }

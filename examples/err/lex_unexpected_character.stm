@@ -1,4 +1,4 @@
 // ERROR: LEX001
-functio main() {
+functio principalis() {
     @
 }

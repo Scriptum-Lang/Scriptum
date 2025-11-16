@@ -147,7 +147,7 @@ class Interpreter:
         self.module = module
         self.global_env = Environment()
 
-    def execute(self, entry_point: str = "main") -> ExecutionResult:
+    def execute(self, entry_point: str = "principalis") -> ExecutionResult:
         self._register_builtins()
         self._register_functions()
         self._initialize_globals()

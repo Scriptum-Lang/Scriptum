@@ -54,6 +54,9 @@ scriptum fmt examples/ok/control_flow.stm
 scriptum dev lex examples/hello.stm
 ```
 
+Consulte `docs/wiki/14_keywords.md` para a lista completa de palavras-chave e
+comandos reconhecidos pela linguagem.
+
 Todos os utilitarios de inspecao (lexer, AST, IR, geracao de tabelas) vivem agora em `scriptum dev <subcomando>`.
 
 ## Suporte de SO

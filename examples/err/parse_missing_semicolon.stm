@@ -1,4 +1,4 @@
 // ERROR: PAR105
-functio main() {
+functio principalis() {
     mutabilis numerus x = 1
 }

@@ -5,7 +5,7 @@ functio preparar_mensagem(textus valor) -> textus {
     redde normalizado;
 }
 
-functio main() -> textus {
+functio principalis() -> textus {
     mutabilis textus entrada = "  SALVE mundo  ";
     mutabilis textus mensagem = preparar_mensagem(entrada);
     mutabilis textus sufixo = textus(33).substitue("33", "!");

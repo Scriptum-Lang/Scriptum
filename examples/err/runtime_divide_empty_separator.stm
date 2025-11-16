@@ -1,4 +1,4 @@
 // ERROR: IR239
-functio main() {
+functio principalis() {
     "abc".divide("");
 }

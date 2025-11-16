@@ -2,8 +2,17 @@
 
 ## [Unreleased]
 
+_Sem mudanças registradas._
+
+## [4.0.1] - 2025-11-07
+
 ### Added
-- Documentação oficial dos códigos de erro do lexer, parser, analisador semântico e runtime, incluindo exemplos do novo formato `ERRO [CÓDIGO]`.
+- Documentacao oficial dos codigos de erro do lexer, parser, analisador semantico e runtime (novo capitulo `docs/wiki/13_error_reporting.md`) com exemplos reais do formato `ERRO [CODIGO]`.
+- Guia consolidado de palavras-chave, operadores e funcoes builtin (`docs/wiki/14_keywords.md`), facilitando a consulta rapida da “tabela de comandos” da linguagem.
+
+### Changed
+- A funcao de entrada padrao passou a se chamar `principalis`, alinhando a sintaxe totalmente ao vocabulario em latim (CLI, exemplos e interprete).
+- O REPL e o modo `scriptum -c` agora suspendem snippets dentro de `functio principalis`, preservando declaracoes e variaveis entre execucoes em linha.
 
 ## [4.0.0] - 2025-11-06
 

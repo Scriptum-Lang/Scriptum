@@ -47,7 +47,7 @@ Embora o driver ainda nao exponha o *build* automatico, o repositorio inclui o p
 
 - `ir/lowering.py` converte `nodes.Module` em `ModuleIr`, preservando spans e estrutura.
 - `codegen/generate.py` garante o lowering (quando necessario) e chama `codegen/emitter.py`, produzindo `formatted` + `ModuleIr`.
-- `ir/interpreter.py` executa o IR resultante (mini VM). O comando `scriptum run` percorre lex/parse/sema/IR e chama o interpretador, retornando o valor de `main()`.
+- `ir/interpreter.py` executa o IR resultante (mini VM). O comando `scriptum run` percorre lex/parse/sema/IR e chama o interpretador, retornando o valor de `principalis()`.
 - `scriptum fmt` usa o mesmo pipeline ate o IR e grava o codigo formatado somente quando ha mudancas.
 
 ## 7. Resumo do pipeline

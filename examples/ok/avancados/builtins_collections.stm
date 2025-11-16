@@ -3,7 +3,7 @@ functio calcular_nota(quodlibet par) -> numerus {
     redde par[0] + par[1];
 }
 
-functio main() -> numerus {
+functio principalis() -> numerus {
     mutabilis numerus acumulado = summa(ambitus(1, 5)); // 1 + 2 + 3 + 4 = 10
     mutabilis numerus menor = minimum([4, 2, 9]);
     mutabilis numerus maior = maximum([4, 2, 9]);

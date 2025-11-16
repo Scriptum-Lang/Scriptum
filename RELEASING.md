@@ -1,10 +1,10 @@
-# Releasing Scriptum 0.3.x
+# Releasing Scriptum 4.x
 
 This guide documents the release process for the Scriptum toolchain.
 
 ## Pre-requisites
 
-- Ensure `pyproject.toml` declares the target version (must remain within `0.3.x`).
+- Ensure `pyproject.toml` declares the target version (must remain within `4.x`).
 - All tests (unit, integration, smoke) should be green locally.
 - The Git repository should be clean (no uncommitted changes).
 
@@ -14,10 +14,10 @@ This guide documents the release process for the Scriptum toolchain.
    Document the new features, fixes, and any notable changes in `CHANGELOG.md`.
 
 2. **Tag the release**  
-   Replace `0.3.1` with the specific `0.3.x` version being released:
+   Replace `4.0.1` with the specific `4.x` version being released:
    ```bash
-   git tag v0.3.x
-   git push origin v0.3.x
+   git tag v4.x
+   git push origin v4.x
    ```
 
 3. **CI builds artifacts**  

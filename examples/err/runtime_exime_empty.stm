@@ -1,5 +1,5 @@
 // ERROR: IR237
-functio main() {
+functio principalis() {
     mutabilis xs = [];
     xs.exime();
 }

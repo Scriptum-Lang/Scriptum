@@ -45,7 +45,7 @@ def test_parser_detects_assignments_and_call() -> None:
 
 def test_parser_reports_missing_semicolon_with_code() -> None:
     parser = ScriptumParser()
-    source = SourceFile("<test>", "functio main() { mutabilis numerus x = 1 }")
+    source = SourceFile("<test>", "functio principalis() { mutabilis numerus x = 1 }")
     with pytest.raises(ParseError) as captured:
         parser.parse(source)
     assert captured.value.code == "PAR105"

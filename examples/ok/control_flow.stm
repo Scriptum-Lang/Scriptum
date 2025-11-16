@@ -5,7 +5,7 @@ functio incrementar(numerus valor) -> numerus {
     redde valor + 1;
 }
 
-functio main() -> numerus {
+functio principalis() -> numerus {
     mutabilis numerus total = 0;
     pro item in [1, 2, 3, 4] {
         si (item == 4) {

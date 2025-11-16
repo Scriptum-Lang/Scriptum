@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from scriptum.cli import cli
+from scriptum.cli import _ReplSession, cli
 
 FIXTURES = Path(__file__).resolve().parents[0] / "fixtures" / "programs"
 
@@ -70,6 +70,21 @@ def test_inline_execution_without_subcommand() -> None:
     result = runner.invoke(cli, ["-c", "42"])
     assert result.exit_code == 0, result.output
     assert json.loads(result.output) == 42
+
+
+def test_inline_execution_accepts_statements() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-c", "mutabilis numerus a = 1;"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output) is None
+
+
+def test_repl_session_persists_state() -> None:
+    session = _ReplSession()
+    assert session.execute("mutabilis numerus a = 1;") is None
+    assert session.execute("a") == 1
+    assert session.execute("a = a + 1;") is None
+    assert session.execute("a") == 2
 
 
 def test_run_without_input_uses_error_schema() -> None:

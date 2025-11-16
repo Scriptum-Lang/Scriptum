@@ -243,11 +243,25 @@ def _wrap_inline_snippet(snippet: str) -> str:
     body = snippet.strip()
     if not body:
         return ""
-    if not body.endswith(";"):
-        body += ";"
-    if not body.startswith("redde"):
-        body = f"redde {body}"
-    return "functio main() {\n    " + body + "\n}\n"
+    if "functio" in body:
+        return body if body.endswith("\n") else body + "\n"
+
+    def _wrap_block(content: str) -> str:
+        trimmed = content.strip("\n")
+        indented = textwrap.indent(trimmed, "    ")
+        if not indented.endswith("\n"):
+            indented += "\n"
+        return "functio principalis() {\n" + indented + "}\n"
+
+    if "\n" in body or body.endswith(";") or body.endswith("}"):
+        return _wrap_block(body)
+
+    expression = body
+    if not expression.endswith(";"):
+        expression += ";"
+    if not expression.startswith("redde"):
+        expression = f"redde {expression}"
+    return _wrap_block(expression)
 
 
 def _prepare_inline_program(snippet: str) -> str:
@@ -260,6 +274,99 @@ def _prepare_inline_program(snippet: str) -> str:
     if not wrapped:
         _fail_usage("Inline code cannot be empty.")
     return wrapped
+
+
+class _ReplSession:
+    """Incrementally builds a Scriptum module for the REPL."""
+
+    def __init__(self) -> None:
+        self._declarations: list[str] = []
+        self._statements: list[str] = []
+
+    def execute(self, snippet: str) -> Optional[object]:
+        classification = self._classify(snippet)
+        if classification == "empty":
+            return None
+        if classification == "declaration":
+            normalized = self._normalize_block(snippet)
+            self._declarations.append(normalized)
+            try:
+                self._run_program()
+            except ScriptumCLIError:
+                self._declarations.pop()
+                raise
+            return None
+        if classification == "statement":
+            normalized = self._normalize_statement(snippet)
+            self._statements.append(normalized)
+            try:
+                self._run_program()
+            except ScriptumCLIError:
+                self._statements.pop()
+                raise
+            return None
+        expression = self._normalize_expression(snippet)
+        extra = f"__repl_last = ({expression});"
+        return self._run_program(extra_statement=extra)
+
+    @staticmethod
+    def _classify(snippet: str) -> str:
+        stripped = snippet.strip()
+        if not stripped:
+            return "empty"
+        lowered = stripped.split(None, 1)[0]
+        if lowered == "functio":
+            return "declaration"
+        if stripped.startswith("redde "):
+            return "expression"
+        if stripped.endswith(";") or stripped.endswith("}"):
+            return "statement"
+        return "expression"
+
+    @staticmethod
+    def _normalize_block(snippet: str) -> str:
+        block = textwrap.dedent(snippet).rstrip()
+        if not block.endswith("\n"):
+            block += "\n"
+        return block + "\n"
+
+    @staticmethod
+    def _normalize_statement(snippet: str) -> str:
+        body = textwrap.dedent(snippet).strip()
+        if not body.endswith((";", "}", "{")):
+            body += ";"
+        return body
+
+    @staticmethod
+    def _normalize_expression(snippet: str) -> str:
+        expr = snippet.strip()
+        if expr.startswith("redde"):
+            expr = expr[5:].strip()
+        if expr.endswith(";"):
+            expr = expr[:-1].rstrip()
+        return expr or "nullum"
+
+    def _build_program(self, extra_statement: Optional[str] = None) -> str:
+        parts: list[str] = []
+        parts.extend(self._declarations)
+        body_lines = ["mutabilis quodlibet __repl_last = nullum;"]
+        body_lines.extend(self._statements)
+        if extra_statement:
+            body_lines.append(extra_statement)
+        body_lines.append("redde __repl_last;")
+        body = "\n    ".join(body_lines)
+        parts.append("functio principalis() {\n    " + body + "\n}\n")
+        return "\n".join(parts)
+
+    def _run_program(self, *, extra_statement: Optional[str] = None) -> Optional[object]:
+        program = self._build_program(extra_statement=extra_statement)
+        temp_source = _write_temp_source(program)
+        try:
+            result = _run_driver(temp_source, Stage.RUN)
+        finally:
+            temp_source.unlink(missing_ok=True)
+        execution = result.execution
+        return execution.value if execution else None
 
 
 def _semantic_reports(source: pathlib.Path, diagnostics: list) -> list[ErrorReport]:
@@ -345,6 +452,7 @@ def run_cmd(source: Optional[pathlib.Path], inline_code: Optional[str], module_n
 @cli.command("repl", help="Start an experimental Scriptum REPL.")
 def repl_cmd() -> None:
     click.echo("Scriptum REPL (experimental). Type 'exit' to leave.")
+    session = _ReplSession()
     while True:
         try:
             line = click.prompt(">>>", prompt_suffix=" ", default="", show_default=False)
@@ -354,18 +462,12 @@ def repl_cmd() -> None:
 
         if line.strip() in {"exit", "quit"}:
             break
-        wrapped = _wrap_inline_snippet(line)
-        if not wrapped:
-            continue
-        temp_source = _write_temp_source(wrapped)
         try:
-            result = _run_driver(temp_source, Stage.RUN)
-            value = result.execution.value if result.execution else None
-            click.echo(value)
+            value = session.execute(line)
+            if value is not None:
+                click.echo(value)
         except ScriptumCLIError as exc:
             click.secho(exc.report.format_cli_text(), fg="red")
-        finally:
-            temp_source.unlink(missing_ok=True)
 
 
 @cli.command("build", help="Compile a Scriptum program and emit a formatted file or IR.")

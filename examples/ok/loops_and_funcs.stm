@@ -9,7 +9,7 @@ functio soma(numerus limite) -> numerus {
     redde total;
 }
 
-functio main() -> numerus {
+functio principalis() -> numerus {
     mutabilis numerus parcial = soma(4);
     redde parcial + 5;
 }

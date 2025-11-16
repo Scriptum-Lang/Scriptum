@@ -1,4 +1,4 @@
 // ERROR: T301
-functio main() {
+functio principalis() {
     mutabilis numerus tamanho = longitudo(42);
 }

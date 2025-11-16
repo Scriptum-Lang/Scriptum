@@ -1,4 +1,4 @@
 // ERROR: T301
-functio main() {
+functio principalis() {
     applica([1, 2, 3], 99);
 }

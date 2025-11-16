@@ -10,7 +10,7 @@ def test_parser_depth_limit() -> None:
     config = ParserConfig(max_depth=10)
     parser = ScriptumParser(config=config)
     nested = "(" * 20 + "1" + ")" * 20
-    source = SourceFile("<test>", f"functio main() {{ mutabilis numerus x = {nested}; }}")
+    source = SourceFile("<test>", f"functio principalis() {{ mutabilis numerus x = {nested}; }}")
     with pytest.raises(ParseError):
         parser.parse(source)
 
@@ -19,6 +19,6 @@ def test_parser_depth_limit_can_be_raised() -> None:
     config = ParserConfig(max_depth=1000)
     parser = ScriptumParser(config=config)
     nested = "(" * 50 + "1" + ")" * 50
-    source = SourceFile("<test>", f"functio main() {{ mutabilis numerus x = {nested}; }}")
+    source = SourceFile("<test>", f"functio principalis() {{ mutabilis numerus x = {nested}; }}")
     module = parser.parse(source)
     assert module.declarations

@@ -39,7 +39,7 @@ O módulo `scriptum.ir.interpreter` implementa uma VM estrutural:
 - Executa controle de fluxo (`si`, `dum`, `pro`) com `frange`/`perge`.
 - Dá suporte a funções/lambdas com escopo léxico e parâmetros com default.
 
-O comando `scriptum run` utiliza esse interpretador após passar por lex/parse/sema/IR, retornando o valor de `main()` (ou `nullum` caso não haja retorno explícito).
+O comando `scriptum run` utiliza esse interpretador após passar por lex/parse/sema/IR, retornando o valor de `principalis()` (ou `nullum` caso não haja retorno explícito).
 
 ## Próximos passos
 

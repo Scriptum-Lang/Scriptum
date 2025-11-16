@@ -1,5 +1,5 @@
 // ERROR: S100
-functio main() -> numerus {
+functio principalis() -> numerus {
     mutabilis numerus resultado = valor + 1;
     redde resultado;
 }

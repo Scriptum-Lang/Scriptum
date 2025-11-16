@@ -13,7 +13,7 @@ from scriptum.sema.analyzer import SemanticAnalyzer
 from scriptum.text import SourceFile
 
 
-def _run_program(source: str, entry: str = "main") -> Any:
+def _run_program(source: str, entry: str = "principalis") -> Any:
     parser = ScriptumParser()
     normalized = textwrap.dedent(source).strip() + "\n"
     module = parser.parse(SourceFile("<test>", normalized))
@@ -28,7 +28,7 @@ def _run_program(source: str, entry: str = "main") -> Any:
 def test_ambitus_and_summa() -> None:
     result = _run_program(
         """
-        functio main() -> numerus {
+        functio principalis() -> numerus {
             mutabilis valores = ambitus(0, 5);
             redde summa(valores);
         }
@@ -40,7 +40,7 @@ def test_ambitus_and_summa() -> None:
 def test_minimum_maximum_absolutum() -> None:
     result = _run_program(
         """
-        functio main() {
+        functio principalis() {
             mutabilis valores = [4, 2, 9];
             redde [minimum(valores), maximum(valores), absolutum(-5)];
         }
@@ -52,7 +52,7 @@ def test_minimum_maximum_absolutum() -> None:
 def test_boolean_helpers() -> None:
     result = _run_program(
         """
-        functio main() {
+        functio principalis() {
             redde [aliquod([falsum, verum, falsum]), omnia([verum, verum]), omnia([])];
         }
         """
@@ -63,7 +63,7 @@ def test_boolean_helpers() -> None:
 def test_collection_helpers() -> None:
     result = _run_program(
         """
-        functio main() {
+        functio principalis() {
             mutabilis pares = enumera(["a", "b"]);
             mutabilis combinado = coniunge([1, 2], [3, 4]);
             mutabilis dobrado = applica([1, 2, 3], functio (x) => x * 2);
@@ -91,7 +91,7 @@ def test_collection_helpers() -> None:
 def test_array_methods_mutate_collection() -> None:
     result = _run_program(
         """
-        functio main() {
+        functio principalis() {
             mutabilis xs = [1, 2];
             xs.adde(3);
             xs.extende([4, 5]);
@@ -109,7 +109,7 @@ def test_array_methods_mutate_collection() -> None:
 def test_array_method_purga() -> None:
     result = _run_program(
         """
-        functio main() -> numerus {
+        functio principalis() -> numerus {
             mutabilis xs = [1, 2];
             xs.purga();
             redde longitudo(xs);
@@ -122,7 +122,7 @@ def test_array_method_purga() -> None:
 def test_string_methods() -> None:
     result = _run_program(
         """
-        functio main() {
+        functio principalis() {
             mutabilis partes = "a,b,c".divide(",");
             mutabilis textus unido = ", ".coniunge(["a", "b", "c"]);
             mutabilis textus trocado = "abcabc".substitue("a", "x");
@@ -150,7 +150,7 @@ def test_string_methods() -> None:
 def test_scribe_writes_all_arguments(capsys: pytest.CaptureFixture[str]) -> None:
     _run_program(
         """
-        functio main() {
+        functio principalis() {
             scribe("salve", 42, verum);
         }
         """
@@ -164,7 +164,7 @@ def test_lege_uses_custom_input_provider() -> None:
     try:
         result = _run_program(
             """
-            functio main() -> textus {
+            functio principalis() -> textus {
                 redde lege(">");
             }
             """

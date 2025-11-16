@@ -18,6 +18,7 @@ Bem-vindo ao hub de documentacao oficial da linguagem **Scriptum** (`.stm`). Aqu
 12. [Roadmap e evolucoes](99_roadmap.md)
 13. [Biblioteca padrão builtin](12_stdlib.md)
 14. [Diagnóstico e códigos de erro](13_error_reporting.md)
+15. [Palavras-chave e comandos](14_keywords.md)
 
 ### Recursos complementares
 

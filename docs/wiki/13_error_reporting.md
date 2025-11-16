@@ -57,7 +57,7 @@ Esses códigos também são convertidos para `ErrorReport`, preservando o span c
 | Código | Origem | Condição | Referência |
 | --- | --- | --- | --- |
 | `IR001`–`IR003` | `Environment` | Declaração duplicada, atribuição em `constans`, nome inexistente. | `src/scriptum/ir/interpreter.py:47-80` |
-| `IR010`–`IR011` | `Interpreter.execute` | `main` ausente ou não chamável. | `src/scriptum/ir/interpreter.py:150-165` |
+| `IR010`–`IR011` | `Interpreter.execute` | `principalis` ausente ou não chamável. | `src/scriptum/ir/interpreter.py:150-165` |
 | `IR020`–`IR021` | Binding de parâmetros | Aridade incorreta em funções/lambdas. | `src/scriptum/ir/interpreter.py:210-230` |
 | `IR030`–`IR041` | Execução de statements/expressões | `break` fora de laço, operadores não suportados, atribuições inválidas. | `src/scriptum/ir/interpreter.py:258-335` |
 | `IR050`–`IR061` | Acesso a membros, indexação, chamadas | Objetos não indexáveis, `call` em não-função etc. | `src/scriptum/ir/interpreter.py:347-383` |

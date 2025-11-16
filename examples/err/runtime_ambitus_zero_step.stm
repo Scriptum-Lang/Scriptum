@@ -1,4 +1,4 @@
 // ERROR: IR234
-functio main() {
+functio principalis() {
     ambitus(0, 5, 0);
 }
