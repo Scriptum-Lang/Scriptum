@@ -1,0 +1,4 @@
+// ERROR: IR239
+functio main() {
+    "abc".divide("");
+}

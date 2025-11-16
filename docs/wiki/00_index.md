@@ -16,11 +16,13 @@ Bem-vindo ao hub de documentacao oficial da linguagem **Scriptum** (`.stm`). Aqu
 10. [Analise semantica passo a passo](10_semantica_pipeline.md)
 11. [AFN e AFD no lexer](11_afn_afd.md)
 12. [Roadmap e evolucoes](99_roadmap.md)
+13. [Biblioteca padrão builtin](12_stdlib.md)
+14. [Diagnóstico e códigos de erro](13_error_reporting.md)
 
 ### Recursos complementares
 
 - [Gramática LL(1) didática](../grammar.md) — expressões inteiras com derivações guiadas e uso em sala de aula.
-- Pacote `src/ll1calc/` — implementação de lexer, FIRST/FOLLOW, tabela e parser LL(1) totalmente isolados do compilador principal; os testes vivem em `tests/test_parser.py`.
+- Arquivo `src/scriptum/parser/ll1_arithmetic.py` — implementação compacta de lexer, FIRST/FOLLOW, tabela e parser LL(1) reutilizada pelo compilador; os testes vivem em `tests/test_parser.py`.
 
 ## Estrutura do repositorio
 

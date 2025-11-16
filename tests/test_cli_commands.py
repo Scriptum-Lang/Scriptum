@@ -40,7 +40,7 @@ def test_check_reports_diagnostics_in_json() -> None:
         ["check", str(FIXTURES / "error_sema.stm"), "--json"],
     )
     assert err_result.exit_code != 0
-    payload_text = err_result.output.split("Error:", 1)[0].strip()
+    payload_text = err_result.output.split("ERRO", 1)[0].strip()
     diagnostics = json.loads(payload_text)
     assert diagnostics and diagnostics[0]["code"] == "S100"
     assert diagnostics[0]["position"]["line"] >= 1
@@ -64,18 +64,19 @@ def test_default_invocation_executes_program() -> None:
     assert json.loads(result.output) == 2
 
 
-def test_legacy_lex_still_available_with_warning() -> None:
-    runner = CliRunner()
-    result = runner.invoke(cli, ["lex", str(FIXTURES / "basic_valid.stm")])
-    assert result.exit_code == 0, result.output
-    assert "[warning]" in result.output
-
 
 def test_inline_execution_without_subcommand() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["-c", "42"])
     assert result.exit_code == 0, result.output
     assert json.loads(result.output) == 42
+
+
+def test_run_without_input_uses_error_schema() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["run"])
+    assert result.exit_code != 0
+    assert "ERRO [CLI_USAGE]" in result.output
 
 
 @pytest.mark.parametrize(

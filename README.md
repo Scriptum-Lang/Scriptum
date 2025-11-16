@@ -54,7 +54,7 @@ scriptum fmt examples/ok/control_flow.stm
 scriptum dev lex examples/hello.stm
 ```
 
-Todos os utilitários de inspeção (lexer, AST, IR, geração de tabelas) vivem agora em `scriptum dev <subcomando>`, mantendo compatibilidade com os nomes antigos até a v0.4.0 (expostos via `scriptum-classic` ou `python -m scriptum.driver`).
+Todos os utilitarios de inspecao (lexer, AST, IR, geracao de tabelas) vivem agora em `scriptum dev <subcomando>`.
 
 ## Suporte de SO
 

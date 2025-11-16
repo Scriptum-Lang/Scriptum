@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from scriptum.ast import nodes
-from scriptum.parser.parser import ScriptumParser
+from scriptum.parser.parser import ParseError, ScriptumParser
 from scriptum.text import SourceFile
 
 EXAMPLES_ROOT = Path(__file__).resolve().parents[1] / "examples"
@@ -26,6 +26,8 @@ def _parse(relative: str) -> nodes.Module:
         "ok/basicos/condicionais.stm",
         "ok/intermediarios/classes.stm",
         "ok/avancados/sistema_bancario.stm",
+        "ok/avancados/builtins_collections.stm",
+        "ok/avancados/textus_manipulacoes.stm",
     ],
 )
 def test_parser_smoke(relative: str) -> None:
@@ -39,3 +41,12 @@ def test_parser_detects_assignments_and_call() -> None:
     assign_stmt = next(stmt for stmt in init_func.body.statements if isinstance(stmt, nodes.ExpressionStatement))
     assert isinstance(assign_stmt.expression, nodes.AssignmentExpression)
     assert isinstance(assign_stmt.expression.value, nodes.CallExpression)
+
+
+def test_parser_reports_missing_semicolon_with_code() -> None:
+    parser = ScriptumParser()
+    source = SourceFile("<test>", "functio main() { mutabilis numerus x = 1 }")
+    with pytest.raises(ParseError) as captured:
+        parser.parse(source)
+    assert captured.value.code == "PAR105"
+    assert captured.value.span is not None

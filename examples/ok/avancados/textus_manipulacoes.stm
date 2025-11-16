@@ -1,0 +1,14 @@
+// EXPECT: "scriptum!"
+functio preparar_mensagem(textus valor) -> textus {
+    mutabilis partes = valor.abscinde().ad_minusculas().divide(" ");
+    mutabilis textus normalizado = "-".coniunge(partes).substitue("salve", "scriptum");
+    redde normalizado;
+}
+
+functio main() -> textus {
+    mutabilis textus entrada = "  SALVE mundo  ";
+    mutabilis textus mensagem = preparar_mensagem(entrada);
+    mutabilis textus sufixo = textus(33).substitue("33", "!");
+    mutabilis textus base = mensagem.substitue("-mundo", "");
+    redde "".coniunge([base, sufixo]);
+}

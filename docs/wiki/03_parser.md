@@ -65,11 +65,10 @@ Sempre que uma expressão é puramente aritmética (`num`, `+ - * /` e parêntes
 
 ## Apêndice: pipeline LL(1) didático
 
-Para fins educacionais, mantemos em `src/ll1calc/` um conjunto de ferramentas LL(1) enxuto, dedicado apenas a expressões com `+ - * / ( )` e inteiros:
+Para fins educacionais, mantemos no próprio pacote `scriptum.parser` (arquivo `ll1_arithmetic.py`) um conjunto de ferramentas LL(1) enxuto, dedicado apenas a expressões com `+ - * / ( )` e inteiros:
 
-1. A gramática fatorada e sem recursão à esquerda está descrita em `docs/grammar.md`.
-2. `first_follow.py` calcula automaticamente os conjuntos FIRST/FOLLOW, reaproveitados por `ll1_table.py` para gerar a tabela LL(1).
-3. `parser.py` implementa o algoritmo preditivo com pilha, registrando cada produção aplicada e montando uma árvore sintática completa.
-4. `tests/test_parser.py` valida os exemplos mínimos exigidos em sala (`42`, `1+2*3`, `(1+2)*3-4/2`, `((2))`) e cobre erros léxicos/sintáticos.
+1. A gramática fatorada e sem recursão à esquerda está descrita em `docs/grammar.md` e codificada nas constantes `GRAMMAR`, `FIRST_SETS` e `FOLLOW_SETS`.
+2. A mesma unidade calcula automaticamente FIRST/FOLLOW, gera a tabela LL(1) e expõe `LL1Parser`/`ParseTreeNode` para reuso pelo Pratt parser.
+3. `tests/test_parser.py` valida os exemplos mínimos exigidos em sala (`42`, `1+2*3`, `(1+2)*3-4/2`, `((2))`) e cobre erros léxicos/sintáticos.
 
 Esse pipeline não substitui o Pratt parser; ele existe como material de apoio para disciplinas de compiladores e para comparar abordagens (LL(1) vs. descida recursiva/Pratt).

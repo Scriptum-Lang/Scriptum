@@ -1,0 +1,4 @@
+// ERROR: T301
+functio main() {
+    applica([1, 2, 3], 99);
+}

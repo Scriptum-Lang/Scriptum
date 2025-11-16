@@ -59,6 +59,10 @@ class Type:
                 param_self.is_assignable_from(param_other)
                 for param_self, param_other in zip(self.params, other.params)
             ) and (self.ret is None or other.ret is None or self.ret.is_assignable_from(other.ret))
+        if self.kind is TypeKind.ARRAY and other.kind is TypeKind.ARRAY:
+            if self.element is None or other.element is None:
+                return True
+            return self.element.is_assignable_from(other.element)
         return False
 
     def with_optional(self) -> "Type":

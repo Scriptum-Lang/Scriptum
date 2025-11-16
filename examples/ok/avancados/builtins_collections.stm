@@ -1,0 +1,25 @@
+// EXPECT: 33
+functio calcular_nota(quodlibet par) -> numerus {
+    redde par[0] + par[1];
+}
+
+functio main() -> numerus {
+    mutabilis numerus acumulado = summa(ambitus(1, 5)); // 1 + 2 + 3 + 4 = 10
+    mutabilis numerus menor = minimum([4, 2, 9]);
+    mutabilis numerus maior = maximum([4, 2, 9]);
+    mutabilis numerus absoluto = absolutum(-3);
+
+    mutabilis pares = enumera(["salve", "vale"]);
+    mutabilis booleanum possui_texto = aliquod([falsum, verum, falsum]);
+    mutabilis booleanum todos_trues = omnia([verum, verum]);
+    mutabilis numerus indicador = possui_texto ? 2 : 0;
+    indicador = todos_trues ? indicador + 1 : indicador;
+
+    mutabilis zipado = coniunge([1, 2], [10, 20]);
+    mutabilis pontuacoes = applica(zipado, functio (par) => calcular_nota(par));
+    mutabilis filtrado = filtra(pontuacoes, functio (valor) => valor > 15);
+    mutabilis ordenado = ordina([3, 1, 2], nullum, verum);
+    mutabilis numerus topo = numerus(ordenado[0]);
+
+    redde acumulado + menor + maior + absoluto + longitudo(pares) + longitudo(filtrado) + indicador + topo;
+}

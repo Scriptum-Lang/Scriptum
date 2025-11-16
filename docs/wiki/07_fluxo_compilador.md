@@ -62,11 +62,11 @@ SourceFile -> Lexer (DFA tables) -> Tokens
 
 Use esta visao como guia ao navegar pelo repositorio ou implementar novas features. Cada etapa publica APIs claras para facilitar testes isolados.
 
-## 8. Comandos de CLI (v0.3.2)
+## 8. Comandos de CLI (v4.0.0)
 
 - **Execucao**: `scriptum arquivo.stm`, `scriptum run`, `scriptum -c`, `scriptum -m`, `scriptum repl`.
 - **Build/qualidade**: `scriptum build`, `scriptum package`, `scriptum check`, `scriptum fmt`, `scriptum test`, `scriptum doc build|serve`.
 - **Ferramentas de inspecao**: `scriptum dev lex|ast|ir|tokens|build-lexer|bench`.
-- **Compatibilidade**: `scriptum lex|parse|sema|ir|compile|build-lexer` permanecem disponiveis com aviso ate a v0.4.0.
+- **Compatibilidade**: Comandos `scriptum lex|parse|sema|ir|compile|build-lexer` foram removidos na v4.0.0; utilize `scriptum dev ...`.
 
 Todos os comandos utilizam `CompilerDriver` como orquestrador; a CLI moderna apenas reorganiza a experiencia, preservando o pipeline descrito nas secoes anteriores.

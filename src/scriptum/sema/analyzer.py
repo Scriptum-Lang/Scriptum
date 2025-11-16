@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from itertools import zip_longest
 from typing import Dict, List, Optional, Tuple
 
+from .. import builtins
 from ..ast import nodes
 from ..text import Span
 from . import symbols, types
@@ -25,6 +26,7 @@ class SemanticAnalyzer:
         self.current_return_type: Optional[types.Type] = None
         self.loop_depth: int = 0
         self.function_signatures: Dict[str, Tuple[List[types.Type], Optional[types.Type]]] = {}
+        self._member_bindings: Dict[int, builtins.MethodBinding] = {}
 
     def analyze(self, module: nodes.Module) -> List[SemanticDiagnostic]:
         self.diagnostics.clear()
@@ -32,6 +34,8 @@ class SemanticAnalyzer:
         self.function_signatures = {}
         self.current_return_type = None
         self.loop_depth = 0
+        self._member_bindings = {}
+        self._declare_builtins()
 
         for declaration in module.declarations:
             if isinstance(declaration, nodes.FunctionDeclaration):
@@ -54,6 +58,19 @@ class SemanticAnalyzer:
         if not self.symbols.declare(symbols.Symbol(func.name, function_type, mutable=False, span=func.span)):
             self._error("S110", f"Symbol '{func.name}' already declared in this scope", func.span)
         self.function_signatures[func.name] = (param_types, return_annotation)
+
+    def _declare_builtins(self) -> None:
+        for spec in builtins.GLOBAL_FUNCTIONS.values():
+            signature = types.function_type([param.type for param in spec.parameters], spec.return_type)
+            self.symbols.declare(
+                symbols.Symbol(
+                    name=spec.name,
+                    type=signature,
+                    mutable=False,
+                    span=None,
+                    builtin=spec,
+                )
+            )
 
     def _analyze_function(self, func: nodes.FunctionDeclaration) -> None:
         signature = self.function_signatures.get(func.name)
@@ -173,7 +190,11 @@ class SemanticAnalyzer:
         if isinstance(expr, nodes.CallExpression):
             return self._analyze_call(expr)
         if isinstance(expr, nodes.MemberExpression):
-            self._analyze_expression(expr.object)
+            object_type = self._analyze_expression(expr.object)
+            binding = self._bind_member_builtin(expr, object_type)
+            if binding:
+                self._member_bindings[expr.node_id] = binding
+                return types.function_type([param.type for param in binding.parameters], binding.return_type)
             return types.PRIMITIVE_TYPES["quodlibet"]
         if isinstance(expr, nodes.IndexExpression):
             collection_type = self._analyze_expression(expr.collection)
@@ -202,6 +223,20 @@ class SemanticAnalyzer:
         if isinstance(expr, nodes.LambdaExpression):
             return types.PRIMITIVE_TYPES["quodlibet"]
         return types.PRIMITIVE_TYPES["quodlibet"]
+
+    def _bind_member_builtin(
+        self, expr: nodes.MemberExpression, object_type: Optional[types.Type]
+    ) -> Optional[builtins.MethodBinding]:
+        if object_type is None:
+            return None
+        spec = None
+        if object_type.kind is types.TypeKind.ARRAY:
+            spec = builtins.ARRAY_METHODS.get(expr.property)
+        elif object_type.kind is types.TypeKind.TEXTUS:
+            spec = builtins.TEXT_METHODS.get(expr.property)
+        if spec is None:
+            return None
+        return spec.bind(object_type)
 
     def _analyze_unary(self, expr: nodes.UnaryExpression) -> types.Type:
         operand_type = self._analyze_expression(expr.operand)
@@ -318,6 +353,28 @@ class SemanticAnalyzer:
     def _analyze_call(self, expr: nodes.CallExpression) -> types.Type:
         callee_type = self._analyze_expression(expr.callee)
         argument_types = [self._analyze_expression(argument) for argument in expr.arguments]
+        builtin_spec = self._resolve_builtin_function(expr.callee)
+        if builtin_spec:
+            self._validate_callable_arguments(
+                expr,
+                builtin_spec.name,
+                builtin_spec.parameters,
+                argument_types,
+                variadic=builtin_spec.variadic,
+                variadic_type=builtin_spec.variadic_type,
+            )
+            return builtin_spec.return_type
+        bound_method = self._resolve_bound_method(expr.callee)
+        if bound_method:
+            self._validate_callable_arguments(
+                expr,
+                bound_method.spec.name,
+                bound_method.parameters,
+                argument_types,
+                variadic=False,
+                variadic_type=None,
+            )
+            return bound_method.return_type
         if callee_type and callee_type.kind is types.TypeKind.FUNCTION:
             param_types = callee_type.params or []
             if len(param_types) != len(argument_types):
@@ -339,12 +396,93 @@ class SemanticAnalyzer:
                         arg_expr.span,
                     )
             return callee_type.ret or types.PRIMITIVE_TYPES["quodlibet"]
-
         if callee_type is not None:
             self._error("T302", "Expression is not callable", expr.callee.span)
         else:
             self._error("T302", "Expression is not callable", expr.span)
         return types.PRIMITIVE_TYPES["quodlibet"]
+
+    def _resolve_builtin_function(self, callee: nodes.Expression) -> Optional[builtins.BuiltinFunctionSpec]:
+        if isinstance(callee, nodes.Identifier):
+            symbol = self.symbols.lookup(callee.name)
+            if symbol and symbol.builtin:
+                return symbol.builtin
+        return None
+
+    def _resolve_bound_method(self, callee: nodes.Expression) -> Optional[builtins.MethodBinding]:
+        if isinstance(callee, nodes.MemberExpression):
+            return self._member_bindings.get(callee.node_id)
+        return None
+
+    def _validate_callable_arguments(
+        self,
+        expr: nodes.CallExpression,
+        name: str,
+        parameters: List[builtins.BuiltinParameter],
+        argument_types: List[Optional[types.Type]],
+        *,
+        variadic: bool,
+        variadic_type: Optional[types.Type],
+    ) -> None:
+        required = sum(1 for param in parameters if not param.optional)
+        if len(argument_types) < required:
+            self._error("T300", f"{name} expects at least {required} argument(s).", expr.span)
+            return
+        max_args = None if variadic else len(parameters)
+        if max_args is not None and len(argument_types) > max_args:
+            self._error("T300", f"{name} accepts at most {max_args} argument(s).", expr.span)
+        for index, (param, arg_type) in enumerate(zip(parameters, argument_types), start=1):
+            if arg_type is None:
+                continue
+            argument_expr = expr.arguments[index - 1] if index - 1 < len(expr.arguments) else None
+            if not self._parameter_accepts(param, arg_type, argument_expr):
+                arg_span = argument_expr.span if argument_expr else expr.span
+                self._error("T301", f"Argument {index} for {name} expects {param.type}, got {arg_type}.", arg_span)
+        if variadic:
+            extra = argument_types[len(parameters) :]
+            for offset, arg_type in enumerate(extra, start=len(parameters) + 1):
+                if arg_type is None or variadic_type is None:
+                    continue
+                argument_expr = expr.arguments[offset - 1] if offset - 1 < len(expr.arguments) else None
+                if not self._parameter_accepts(
+                    builtins.BuiltinParameter(type=variadic_type, optional=False), arg_type, argument_expr
+                ):
+                    arg_span = argument_expr.span if argument_expr else expr.span
+                    self._error(
+                        "T301",
+                        f"Argument {offset} for {name} expects {variadic_type}, got {arg_type}.",
+                        arg_span,
+                    )
+
+    def _parameter_accepts(
+        self,
+        param: builtins.BuiltinParameter,
+        arg_type: types.Type,
+        argument_expr: Optional[nodes.Expression] = None,
+    ) -> bool:
+        if param.allowed_kinds:
+            if arg_type.kind in param.allowed_kinds:
+                return True
+            if (
+                argument_expr is not None
+                and isinstance(argument_expr, nodes.ArrayLiteral)
+                and not argument_expr.elements
+                and types.TypeKind.ARRAY in param.allowed_kinds
+                and arg_type.kind is types.TypeKind.ARRAY
+            ):
+                return True
+            return False
+        if (
+            argument_expr is not None
+            and isinstance(argument_expr, nodes.ArrayLiteral)
+            and not argument_expr.elements
+            and param.type.kind is types.TypeKind.ARRAY
+            and arg_type.kind is types.TypeKind.ARRAY
+        ):
+            return True
+        if param.type.kind is types.TypeKind.FUNCTION and isinstance(argument_expr, nodes.LambdaExpression):
+            return True
+        return param.type.is_assignable_from(arg_type)
 
     def _annotation_to_type(self, annotation: Optional[nodes.TypeAnnotation]) -> Optional[types.Type]:
         if annotation is None:

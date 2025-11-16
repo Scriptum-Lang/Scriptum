@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 from .types import Type
 
+if TYPE_CHECKING:  # pragma: no cover - typing helper
+    from ..builtins import BuiltinFunctionSpec
 
 @dataclass(slots=True)
 class Symbol:
@@ -14,6 +16,7 @@ class Symbol:
     type: Type
     mutable: bool
     span: Optional[object] = None
+    builtin: Optional["BuiltinFunctionSpec"] = None
 
 
 @dataclass(slots=True)

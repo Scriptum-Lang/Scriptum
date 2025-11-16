@@ -6,9 +6,7 @@ from pathlib import Path
 import re
 from typing import Sequence
 
-from ll1calc.first_follow import EPSILON
-from ll1calc.lexer import LexerError
-from ll1calc.parser import LL1Parser, ParseError as LL1ParseError, ParseTreeNode
+from ..parser.ll1_arithmetic import EPSILON, LexerError, LL1Parser, ParseError as LL1ParseError, ParseTreeNode
 
 from ..ast import nodes
 from ..parser.parser import ParseError as ScriptumParseError, ParserTrace, ParserTraceNode, ScriptumParser

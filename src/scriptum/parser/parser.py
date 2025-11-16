@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NoReturn, Optional, Tuple
 
-from ll1calc.first_follow import EPSILON as LL1_EPSILON
-from ll1calc.lexer import LexerError as LL1LexerError
-from ll1calc.parser import LL1Parser, ParseError as LL1ParseError, ParseTreeNode as LL1ParseTreeNode
+from .ll1_arithmetic import (
+    EPSILON as LL1_EPSILON,
+    LL1Parser,
+    LexerError as LL1LexerError,
+    ParseError as LL1ParseError,
+    ParseTreeNode as LL1ParseTreeNode,
+)
 
 from .. import errors, text, tokens
 from ..ast import nodes
@@ -29,9 +33,19 @@ TYPE_KEYWORDS = {
     "structura",
 }
 
+CALLABLE_KEYWORDS = {
+    "numerus",
+    "textus",
+    "booleanum",
+}
 
 class ParseError(errors.CompilerError):
     """Raised when a syntactic error is encountered."""
+
+    def __init__(self, code: str, message: str, span: Span | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.span = span
 
 
 @dataclass(slots=True)
@@ -127,7 +141,7 @@ class ScriptumParser:
         stmt = self._parse_statement()
         if isinstance(stmt, nodes.Declaration):
             return stmt
-        raise ParseError("Unexpected top-level statement.")
+        self._error("PAR100", "Unexpected statement at top level.", getattr(stmt, "span", None))
 
     def _parse_function_declaration(self) -> nodes.FunctionDeclaration:
         start = self._consume_keyword("functio")
@@ -335,10 +349,11 @@ class ScriptumParser:
         self._depth += 1
         if self._depth > self.config.max_depth:
             token = self._peek()
-            raise ParseError(
+            message = (
                 f"Parser depth limit exceeded ({self.config.max_depth}). "
-                f"Last token: {token.lexeme!r} at {token.span}."
+                f"Last token: {token.lexeme!r}."
             )
+            self._error("PAR101", message, token.span)
 
     def _leave_depth(self) -> None:
         self._depth = max(0, self._depth - 1)
@@ -510,7 +525,7 @@ class ScriptumParser:
 
     def _ll1_tree_to_ast(self, node: LL1ParseTreeNode, offset: int) -> nodes.Expression:
         if node.symbol != "E":
-            raise ParseError("LL(1) tree root must be 'E'.")
+            self._error("PAR500", "LL(1) tree root must be 'E'.")
 
         def build_e(current: LL1ParseTreeNode) -> nodes.Expression:
             left = build_t(current.children[0])
@@ -522,7 +537,7 @@ class ScriptumParser:
                 return acc
             operator_node = head
             if operator_node.token is None:
-                raise ParseError("Missing operator token in LL(1) tree.")
+                self._error("PAR501", "Missing operator token in LL(1) tree.")
             right = build_t(current.children[1])
             combined = self._make_binary_node(operator_node.token.lexeme, acc, right)
             return build_e_prime(current.children[2], combined)
@@ -537,7 +552,7 @@ class ScriptumParser:
                 return acc
             operator_node = head
             if operator_node.token is None:
-                raise ParseError("Missing operator token in LL(1) tree.")
+                self._error("PAR501", "Missing operator token in LL(1) tree.")
             right = build_f(current.children[1])
             combined = self._make_binary_node(operator_node.token.lexeme, acc, right)
             return build_t_prime(current.children[2], combined)
@@ -548,13 +563,13 @@ class ScriptumParser:
                 return build_e(current.children[1])
             if child.symbol == "num":
                 if child.token is None:
-                    raise ParseError("Number node missing token.")
+                    self._error("PAR502", "Number node missing token.")
                 start = offset + child.token.position
                 end = start + len(child.token.lexeme)
                 span = Span(start, end)
                 value = int(child.token.lexeme)
                 return nodes.Literal(node_id=self._next_id(), span=span, value=value, raw=child.token.lexeme)
-            raise ParseError(f"Unexpected symbol {child.symbol!r} in LL(1) tree.")
+            self._error("PAR503", f"Unexpected symbol {child.symbol!r} in LL(1) tree.")
 
         return build_e(node)
 
@@ -620,6 +635,8 @@ class ScriptumParser:
                 return self._parse_object_literal(token)
             if token.lexeme == "functio":
                 return self._parse_lambda_expression(token)
+            if token.lexeme in CALLABLE_KEYWORDS:
+                return nodes.Identifier(node_id=self._next_id(), span=token.span, name=token.lexeme)
 
         if token.lexeme == "(":
             expr = self._parse_expression()
@@ -640,7 +657,7 @@ class ScriptumParser:
                 operand=operand,
             )
 
-        raise ParseError(f"Unexpected token {token.lexeme!r} at {token.span}.")
+        self._error("PAR102", f"Unexpected token {token.lexeme!r}.", token.span)
 
     def _finish_call(self, callee: nodes.Expression) -> nodes.Expression:
         arguments: List[nodes.Expression] = []
@@ -763,7 +780,13 @@ class ScriptumParser:
             start_span = start_span or token.span
             end_span = token.span
         if not parts or start_span is None or end_span is None:
-            raise ParseError("Expected type annotation.")
+            failure_span = start_span
+            if failure_span is None:
+                if not self._is_at_end():
+                    failure_span = self._peek().span
+                else:
+                    failure_span = self._previous().span
+            self._error("PAR103", "Expected type annotation.", failure_span)
         return nodes.TypeAnnotation(
             node_id=self._next_id(),
             span=self._combine_spans(start_span, end_span),
@@ -846,23 +869,28 @@ class ScriptumParser:
     def _combine_spans(self, start: Span, end: Span) -> Span:
         return Span(start.start, end.end)
 
+    def _error(self, code: str, message: str, span: Optional[Span] = None) -> NoReturn:
+        if span is None and not self._is_at_end():
+            span = self._peek().span
+        raise ParseError(code, message, span)
+
     def _consume(self, kind: tokens.TokenKind, message: str) -> tokens.Token:
         if self._check(kind):
             return self._advance()
         token = self._peek()
-        raise ParseError(f"{message} Found {token.lexeme!r} at {token.span}.")
+        self._error("PAR104", f"{message} Found {token.lexeme!r}.", token.span)
 
     def _consume_symbol(self, symbol: str, message: str) -> tokens.Token:
         if self._match_symbol(symbol):
             return self._previous()
         token = self._peek()
-        raise ParseError(f"{message} Found {token.lexeme!r} at {token.span}.")
+        self._error("PAR105", f"{message} Found {token.lexeme!r}.", token.span)
 
     def _consume_keyword(self, keyword: str) -> tokens.Token:
         if self._match_keyword(keyword):
             return self._previous()
         token = self._peek()
-        raise ParseError(f"Expected keyword '{keyword}', found {token.lexeme!r}.")
+        self._error("PAR106", f"Expected keyword '{keyword}', found {token.lexeme!r}.", token.span)
 
     def _check(self, kind: tokens.TokenKind) -> bool:
         if self._is_at_end():

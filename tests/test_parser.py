@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ll1calc.lexer import LexerError
-from ll1calc.parser import LL1Parser, ParseError, ParseTreeNode
+from scriptum.parser.ll1_arithmetic import LexerError, LL1Parser, ParseError, ParseTreeNode
 
 
 def _evaluate(tree: ParseTreeNode) -> int:

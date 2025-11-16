@@ -27,7 +27,8 @@ from .driver import CompilerDriver, Stage
 from .ir import format_module_ir
 from .lexer.lexer import ScriptumLexer
 from .parser.parser import ScriptumParser
-from .text import SourceFile, highlight_span, line_col
+from .reporting import ErrorReport
+from .text import SourceFile, Span
 
 HELP_OPTIONS = ["-h", "--help"]
 
@@ -48,6 +49,54 @@ class ScriptumFile(click.ParamType):
 
 
 SCRIPTUM_FILE = ScriptumFile()
+
+
+class ScriptumCLIError(click.ClickException):
+    """Custom Click exception that prints formatted error reports."""
+
+    def __init__(self, report: ErrorReport) -> None:
+        super().__init__(report.message)
+        self.report = report
+
+    def show(self, file=None) -> None:  # pragma: no cover - click handles IO
+        stream = file or click.get_text_stream("stderr")
+        click.echo(self.report.format_cli_text(), file=stream)
+
+
+def _read_source_text(path: Optional[pathlib.Path]) -> Optional[str]:
+    if path is None:
+        return None
+    try:
+        return path.read_text(encoding="utf8")
+    except OSError:
+        return None
+
+
+def _raise_cli_error(
+    code: str,
+    message: str,
+    *,
+    path: Optional[pathlib.Path] = None,
+    span: Optional[Span] = None,
+    source_text: Optional[str] = None,
+) -> None:
+    raise ScriptumCLIError(
+        ErrorReport(
+            code=code,
+            message=message,
+            path=str(path) if path else None,
+            span=span,
+            source=source_text,
+        )
+    )
+
+
+def _fail_usage(message: str) -> None:
+    _raise_cli_error("CLI_USAGE", message)
+
+
+def _fail_io(message: str, *, path: Optional[pathlib.Path] = None) -> None:
+    _raise_cli_error("CLI_IO", message, path=path)
 
 
 DEFAULT_BANNER = """
@@ -165,7 +214,7 @@ def _coerce_source_argument(value: Optional[str]) -> Optional[pathlib.Path]:
     try:
         return SCRIPTUM_FILE.convert(value, None, None)
     except click.BadParameter as exc:
-        raise click.UsageError(str(exc)) from exc
+        _fail_usage(str(exc))
 
 
 def _write_temp_source(payload: str) -> pathlib.Path:
@@ -187,7 +236,7 @@ def _resolve_module(module_name: str) -> pathlib.Path:
     for candidate in candidates:
         if candidate.exists():
             return candidate
-    raise click.UsageError(f"Could not find module '{module_name}' ({relative_path}).")
+    _raise_cli_error("CLI_INPUT", f"Could not find module '{module_name}' ({relative_path}).")
 
 
 def _wrap_inline_snippet(snippet: str) -> str:
@@ -204,32 +253,47 @@ def _wrap_inline_snippet(snippet: str) -> str:
 def _prepare_inline_program(snippet: str) -> str:
     stripped = snippet.strip()
     if not stripped:
-        raise click.UsageError("Inline code cannot be empty.")
+        _fail_usage("Inline code cannot be empty.")
     if "functio" in stripped:
         return stripped
     wrapped = _wrap_inline_snippet(stripped)
     if not wrapped:
-        raise click.UsageError("Inline code cannot be empty.")
+        _fail_usage("Inline code cannot be empty.")
     return wrapped
 
 
-def _warn_legacy(command: str, replacement: str) -> None:
-    click.secho(
-        f"[warning] '{command}' will be removed in v0.4.0. Use '{replacement}'.",
-        fg="yellow",
-        err=True,
-    )
+def _semantic_reports(source: pathlib.Path, diagnostics: list) -> list[ErrorReport]:
+    source_text = _read_source_text(source)
+    path_str = str(source)
+    reports: list[ErrorReport] = []
+    for diagnostic in diagnostics:
+        span_obj = getattr(diagnostic, "span", None)
+        span = span_obj if isinstance(span_obj, Span) else None
+        message = getattr(diagnostic, "message", str(diagnostic))
+        reports.append(
+            ErrorReport(
+                code=getattr(diagnostic, "code", "SEMANTIC_ERROR"),
+                message=message,
+                path=path_str,
+                span=span,
+                source=source_text if (source_text is not None and span is not None) else None,
+            )
+        )
+    return reports
 
 
 def _handle_semantic_error(exc: errors.SemanticError, source: pathlib.Path) -> None:
-    text_data = source.read_text(encoding="utf8")
-    payload = [_diagnostic_to_json(diag, text_data) for diag in exc.diagnostics]
-    click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
-    raise click.ClickException("Semantic analysis failed.") from exc
+    reports = _semantic_reports(source, exc.diagnostics)
+    if not reports:
+        _raise_cli_error("SEMANTIC_ERROR", "Semantic analysis failed.", path=source)
+    raise ScriptumCLIError(reports[0])
 
 
-def _handle_compiler_error(exc: errors.CompilerError) -> None:
-    raise click.ClickException(str(exc)) from exc
+def _handle_compiler_error(exc: errors.CompilerError, source: Optional[pathlib.Path] = None) -> None:
+    span = getattr(exc, "span", None)
+    source_text = _read_source_text(source) if span else None
+    code = getattr(exc, "code", exc.__class__.__name__.upper())
+    _raise_cli_error(code, str(exc), path=source, span=span, source_text=source_text)
 
 
 def _run_driver(source: pathlib.Path, stage: Stage) -> CompilerDriver.Result:
@@ -239,7 +303,7 @@ def _run_driver(source: pathlib.Path, stage: Stage) -> CompilerDriver.Result:
     except errors.SemanticError as exc:
         _handle_semantic_error(exc, source)
     except errors.CompilerError as exc:
-        _handle_compiler_error(exc)
+        _handle_compiler_error(exc, source)
     raise AssertionError("unreachable")  # pragma: no cover
 
 
@@ -255,9 +319,9 @@ def _run_driver(source: pathlib.Path, stage: Stage) -> CompilerDriver.Result:
 def run_cmd(source: Optional[pathlib.Path], inline_code: Optional[str], module_name: Optional[str]) -> None:
     provided = sum(val is not None for val in (source, inline_code, module_name))
     if provided == 0:
-        raise click.UsageError("Provide a .stm file, -c, or -m.")
+        _fail_usage("Provide a .stm file, -c, or -m.")
     if provided > 1:
-        raise click.UsageError("Choose only one input source: file, -c, or -m.")
+        _fail_usage("Choose only one input source: file, -c, or -m.")
 
     delete_source: Optional[pathlib.Path] = None
     if inline_code:
@@ -298,8 +362,8 @@ def repl_cmd() -> None:
             result = _run_driver(temp_source, Stage.RUN)
             value = result.execution.value if result.execution else None
             click.echo(value)
-        except click.ClickException as exc:
-            click.secho(str(exc), fg="red")
+        except ScriptumCLIError as exc:
+            click.secho(exc.report.format_cli_text(), fg="red")
         finally:
             temp_source.unlink(missing_ok=True)
 
@@ -353,7 +417,7 @@ def package_cmd(spec: pathlib.Path | None, pyinstaller: str) -> None:
         spec_path = _generate_pyinstaller_spec(spec_path, project_root)
         click.echo(f"Generated PyInstaller spec at {spec_path}")
     elif not spec_path.exists():
-        raise click.UsageError(f"PyInstaller spec file not found: {spec_path}")
+        _fail_io(f"PyInstaller spec file not found: {spec_path}", path=spec_path)
 
     cmd = [pyinstaller, "--clean", "--noconfirm", str(spec_path)]
     click.echo(" ".join(cmd))
@@ -373,31 +437,20 @@ def _locate_project_root() -> pathlib.Path:
             seen.add(resolved)
             if (resolved / "pyproject.toml").exists():
                 return resolved
-    raise click.ClickException("Unable to locate project root. Run inside the repository or pass --spec.")
+    _fail_usage("Unable to locate project root. Run inside the repository or pass --spec.")
 
 
 def _generate_pyinstaller_spec(spec_path: pathlib.Path, project_root: pathlib.Path) -> pathlib.Path:
     spec_path = spec_path.resolve()
     spec_path.parent.mkdir(parents=True, exist_ok=True)
 
-    entry_path = spec_path.parent / "_scriptum_cli_entry.py"
-    entry_path.write_text(
-        textwrap.dedent(
-            """
-            import runpy
-
-            if __name__ == "__main__":
-                runpy.run_module("scriptum", run_name="__main__", alter_sys=True)
-            """
-        ).strip()
-        + "\n",
-        encoding="utf8",
-    )
-
     src_dir = project_root / "src"
     package_dir = src_dir / "scriptum"
     if not package_dir.exists():
         package_dir = pathlib.Path(__file__).resolve().parent
+    main_entry = package_dir / "__main__.py"
+    if not main_entry.exists():
+        _fail_io(f"Unable to locate Scriptum __main__.py at {main_entry}", path=main_entry)
     pathex = [package_dir.parent.resolve()]
 
     hooks_dir = project_root / "hooks"
@@ -414,7 +467,7 @@ def _generate_pyinstaller_spec(spec_path: pathlib.Path, project_root: pathlib.Pa
         hiddenimports = collect_submodules('scriptum')
 
         a = Analysis(
-            [{repr(str(entry_path))}],
+            [{repr(str(main_entry))}],
             pathex={_format_path_list(pathex)},
             binaries=[],
             datas=datas,
@@ -470,18 +523,19 @@ def _perform_semantic_check(source: pathlib.Path, json_output: bool, quiet_succe
         _handle_semantic_error(exc, source)
         return
     except errors.CompilerError as exc:
-        _handle_compiler_error(exc)
+        _handle_compiler_error(exc, source)
         return
 
     diagnostics = result.diagnostics or []
     if diagnostics:
-        payload = [_diagnostic_to_json(diag, source.read_text(encoding="utf8")) for diag in diagnostics]
+        reports = _semantic_reports(source, diagnostics)
         if json_output:
+            payload = [report.to_dict() for report in reports]
             click.echo(json.dumps(payload, indent=2, ensure_ascii=False))
-        else:
-            for diagnostic in payload:
-                click.echo(f"{diagnostic['code']}: {diagnostic['message']}")
-        raise click.ClickException("Semantic analysis reported issues.")
+            raise ScriptumCLIError(reports[0])
+        for report in reports:
+            click.echo(report.format_cli_text())
+        raise click.exceptions.Exit(1)
 
     if json_output and not quiet_success:
         click.echo("[]")
@@ -505,7 +559,7 @@ def fmt_cmd(source: Optional[pathlib.Path]) -> None:
     if source is None:
         text_data = sys.stdin.read()
         if not text_data:
-            raise click.UsageError("No input received on stdin.")
+            _fail_usage("No input received on stdin.")
         try:
             module = parser.parse(SourceFile("<stdin>", text_data))
         except errors.CompilerError as exc:
@@ -518,7 +572,7 @@ def fmt_cmd(source: Optional[pathlib.Path]) -> None:
     try:
         module = parser.parse(SourceFile(str(source), original_text))
     except errors.CompilerError as exc:
-        _handle_compiler_error(exc)
+        _handle_compiler_error(exc, source)
 
     formatted = generate(module).formatted
     if original_text != formatted:
@@ -538,7 +592,7 @@ def test_cmd(unit: bool, smoke: bool) -> None:
     if smoke:
         script = pathlib.Path("scripts") / ("smoke_local.ps1" if os.name == "nt" else "smoke_local.sh")
         if not script.exists():
-            raise click.ClickException(f"Smoke script not found: {script}")
+            _fail_io(f"Smoke script not found: {script}", path=script)
         click.echo(f"Running {script}...")
         if script.suffix == ".ps1":
             subprocess.run(["powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass", "-File", str(script)], check=True)
@@ -561,7 +615,7 @@ def doc_group() -> None:
 def doc_build_cmd(output: pathlib.Path) -> None:
     wiki = pathlib.Path("docs") / "wiki"
     if not wiki.exists():
-        raise click.ClickException("docs/wiki directory not found.")
+        _fail_io("docs/wiki directory not found.", path=wiki)
     if output.exists():
         shutil.rmtree(output)
     shutil.copytree(wiki, output)
@@ -573,7 +627,7 @@ def doc_build_cmd(output: pathlib.Path) -> None:
 def doc_serve_cmd(port: int) -> None:
     wiki = pathlib.Path("docs") / "wiki"
     if not wiki.exists():
-        raise click.ClickException("docs/wiki directory not found.")
+        _fail_io("docs/wiki directory not found.", path=wiki)
     click.echo(f"Serving documentation at http://localhost:{port}")
     subprocess.run([sys.executable, "-m", "http.server", str(port), "--directory", str(wiki)], check=True)
 
@@ -661,65 +715,12 @@ def dev_build_lexer_cmd() -> None:
 def dev_bench_cmd() -> None:
     examples_root = pathlib.Path("examples") / "ok"
     if not examples_root.exists():
-        raise click.ClickException(f"Directory {examples_root} not found.")
+        _fail_io(f"Directory {examples_root} not found.", path=examples_root)
     examples = list(examples_root.glob("**/*.stm"))
     driver = CompilerDriver()
     for example in examples:
         driver.run(example, until=Stage.CODEGEN)
     click.echo(f"Bench completed for {len(examples)} files.")
-
-
-# ---------------------------------------------------------------------------
-# Legacy aliases (to be removed in v0.4.0)
-# ---------------------------------------------------------------------------
-
-
-@cli.command("lex", hidden=True)
-@click.argument("source", type=SCRIPTUM_FILE, required=True)
-def legacy_lex_cmd(source: pathlib.Path) -> None:
-    _warn_legacy("scriptum lex", "scriptum dev lex")
-    _lex_impl(source)
-
-
-@cli.command("parse", hidden=True)
-@click.argument("source", type=SCRIPTUM_FILE, required=True)
-def legacy_parse_cmd(source: pathlib.Path) -> None:
-    _warn_legacy("scriptum parse", "scriptum dev ast")
-    _ast_impl(source)
-
-
-@cli.command("sema", hidden=True)
-@click.argument("source", type=SCRIPTUM_FILE, required=True)
-def legacy_sema_cmd(source: pathlib.Path) -> None:
-    _warn_legacy("scriptum sema", "scriptum check")
-    _perform_semantic_check(source, json_output=True)
-
-
-@cli.command("ir", hidden=True)
-@click.argument("source", type=SCRIPTUM_FILE, required=True)
-def legacy_ir_cmd(source: pathlib.Path) -> None:
-    _warn_legacy("scriptum ir", "scriptum dev ir")
-    _ir_impl(source)
-
-
-@cli.command("compile", hidden=True)
-@click.argument("source", type=SCRIPTUM_FILE, required=True)
-@click.option(
-    "--stage",
-    type=click.Choice([stage.value for stage in Stage]),
-    default=Stage.CODEGEN.value,
-    show_default=True,
-    help="Pipeline stage to stop after.",
-)
-def legacy_compile_cmd(source: pathlib.Path, stage: str) -> None:
-    _warn_legacy("scriptum compile", "scriptum build")
-    _run_driver(source, Stage(stage))
-
-
-@cli.command("build-lexer", hidden=True)
-def legacy_build_lexer_cmd() -> None:
-    _warn_legacy("scriptum build-lexer", "scriptum dev build-lexer")
-    _build_lexer_tables()
 
 
 @cli.command("version", help="Show the Scriptum CLI version.")
@@ -735,20 +736,6 @@ def _token_to_json(token: tokens.Token) -> dict[str, Any]:
         "span": [token.span.start, token.span.end],
     }
 
-
-def _diagnostic_to_json(diagnostic, source_text: Optional[str]) -> dict[str, Any]:
-    span = diagnostic.span if diagnostic.span else None
-    payload = {
-        "code": getattr(diagnostic, "code", ""),
-        "message": diagnostic.message if hasattr(diagnostic, "message") else str(diagnostic),
-        "span": [span.start, span.end] if span else None,
-    }
-    if span and source_text is not None:
-        payload["snippet"] = source_text[span.start : span.end]
-        line, column = line_col(source_text, span)
-        payload["position"] = {"line": line, "column": column}
-        payload["highlight"] = highlight_span(source_text, span)
-    return payload
 
 
 def _ast_to_dict(value: Any) -> Any:

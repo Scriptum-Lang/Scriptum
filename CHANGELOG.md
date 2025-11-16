@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Documentação oficial dos códigos de erro do lexer, parser, analisador semântico e runtime, incluindo exemplos do novo formato `ERRO [CÓDIGO]`.
+
+## [4.0.0] - 2025-11-06
+
+### Added
+- Unified CLI error reports (codes, path/line hints, caret highlighting) across all commands.
+- PyInstaller builds now run through `src/scriptum/__main__.py`, producing binaries aligned with the new Click CLI by default.
+
+### Changed
+- Version bumped to `4.0.0` to reflect the breaking CLI/tooling refresh completed since 0.3.1.
+- Release tooling (`scriptum package`) always regenerates `build/scriptum.spec` pointing at the modern entry point unless a custom spec is supplied.
+- Removed the legacy aliases (`scriptum lex|parse|sema|ir|compile|build-lexer`) and the `scriptum-classic` entry point; use `scriptum dev ...` instead.
+
+### Fixed
+- Inline execution via `scriptum -c` now wraps snippets automatically and surfaces structured diagnostics when inputs are invalid.
+
 ## [0.3.2] - 2025-11-05
 
 ### Added
@@ -12,6 +31,7 @@
 - `scriptum dev <subcmd>` passou a agrupar ferramentas de inspeção (lex, AST, IR, tokens, build-lexer, bench).
 - Scripts de smoke-test, README, wiki e exemplos foram atualizados para refletir o novo fluxo.
 - Versão do projeto atualizada para `0.3.2`.
+- CLI agora emite relatórios de erro padronizados com códigos/trechos para facilitar depuração.
 
 ### Fixed
 - Mensagens de erros e diagnósticos agora são consistentes entre os novos comandos de alto nível e os utilitários em `dev`.

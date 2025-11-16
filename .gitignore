@@ -15,3 +15,4 @@ build/
 *.spec
 *.log
 .DS_Store
+.vscode

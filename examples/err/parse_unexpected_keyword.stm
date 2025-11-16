@@ -1,0 +1,4 @@
+// ERROR: PAR102
+functio main() {
+    mutabilis numerus x = si;
+}

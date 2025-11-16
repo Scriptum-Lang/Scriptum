@@ -1,0 +1,4 @@
+// ERROR: LEX002
+functio main() {
+    /* comentario sem fim
+}

@@ -1,0 +1,4 @@
+// ERROR: IR234
+functio main() {
+    ambitus(0, 5, 0);
+}

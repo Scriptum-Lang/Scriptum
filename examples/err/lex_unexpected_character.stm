@@ -1,0 +1,4 @@
+// ERROR: LEX001
+functio main() {
+    @
+}

@@ -16,6 +16,7 @@ def test_invalid_character_raises_lexer_error() -> None:
     with pytest.raises(errors.LexerError) as captured:
         lexer.tokenize(_source("@"))
     assert captured.value.span.start == 0
+    assert captured.value.code == "LEX001"
 
 
 def test_unterminated_string_literal() -> None:
@@ -28,5 +29,6 @@ def test_unterminated_string_literal() -> None:
 def test_unterminated_block_comment() -> None:
     lexer = ScriptumLexer()
     program = "mutabilis numerus a = 1 /* comentario sem fim"
-    with pytest.raises(errors.LexerError):
+    with pytest.raises(errors.LexerError) as captured:
         lexer.tokenize(_source(program))
+    assert captured.value.code == "LEX002"

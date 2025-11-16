@@ -1,0 +1,4 @@
+// ERROR: T301
+functio main() {
+    mutabilis numerus tamanho = longitudo(42);
+}

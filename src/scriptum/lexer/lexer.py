@@ -168,13 +168,13 @@ class ScriptumLexer:
         char = source.text[position] if position < len(source.text) else "EOF"
         message = f"Unexpected character {char!r} at line {line}, column {column}"
         span = text.Span(position, min(position + 1, len(source.text)))
-        return errors.LexerError(message, span)
+        return errors.LexerError("LEX001", message, span)
 
     def _unterminated_block_comment(self, source: text.SourceFile, position: int) -> errors.LexerError:
         line, column = self._line_col(source.text, position)
         span = text.Span(position, len(source.text))
         message = f"Unterminated block comment starting at line {line}, column {column}"
-        return errors.LexerError(message, span)
+        return errors.LexerError("LEX002", message, span)
 
     @staticmethod
     def _line_col(content: str, pos: int) -> tuple[int, int]:

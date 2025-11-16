@@ -27,8 +27,9 @@ class CompilerNotImplemented(CompilerError):
 class LexerError(CompilerError):
     """Raised when the lexer cannot tokenise the provided input."""
 
-    def __init__(self, message: str, span: "Span") -> None:
+    def __init__(self, code: str, message: str, span: "Span") -> None:
         super().__init__(message)
+        self.code = code
         self.span = span
 
 
@@ -45,3 +46,8 @@ class SemanticError(CompilerError):
 
 class ExecutionError(CompilerError):
     """Raised when executing Scriptum IR fails."""
+
+    def __init__(self, code: str, message: str, span: "Span | None" = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.span = span

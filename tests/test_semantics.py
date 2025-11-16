@@ -148,3 +148,59 @@ def test_ternary_condition_must_be_boolean() -> None:
         """
     )
     assert any(diag.code == "T130" for diag in diagnostics)
+
+
+def test_scribe_accepts_variadic_arguments() -> None:
+    diagnostics = _analyze_snippet(
+        """
+        functio demo() {
+            scribe("salve", 1, verum);
+        }
+        """
+    )
+    assert diagnostics == []
+
+
+def test_longitudo_requires_string_or_array() -> None:
+    diagnostics = _analyze_snippet(
+        """
+        functio demo() {
+            mutabilis numerus tamanho = longitudo(42);
+        }
+        """
+    )
+    assert any(diag.code == "T301" for diag in diagnostics)
+
+
+def test_array_method_enforces_element_type() -> None:
+    diagnostics = _analyze_snippet(
+        """
+        functio demo() {
+            mutabilis xs = [1, 2];
+            xs.adde("texto");
+        }
+        """
+    )
+    assert any(diag.code == "T301" for diag in diagnostics)
+
+
+def test_text_method_argument_types() -> None:
+    diagnostics = _analyze_snippet(
+        """
+        functio demo() {
+            mutabilis partes = "a,b,c".divide(10);
+        }
+        """
+    )
+    assert any(diag.code == "T301" for diag in diagnostics)
+
+
+def test_applica_requires_callable_argument() -> None:
+    diagnostics = _analyze_snippet(
+        """
+        functio demo() {
+            mutabilis xs = applica([1, 2, 3], 10);
+        }
+        """
+    )
+    assert any(diag.code == "T301" for diag in diagnostics)
