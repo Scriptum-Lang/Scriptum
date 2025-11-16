@@ -448,10 +448,13 @@ def _generate_pyinstaller_spec(spec_path: pathlib.Path, project_root: pathlib.Pa
     package_dir = src_dir / "scriptum"
     if not package_dir.exists():
         package_dir = pathlib.Path(__file__).resolve().parent
-    main_entry = package_dir / "__main__.py"
-    if not main_entry.exists():
-        _fail_io(f"Unable to locate Scriptum __main__.py at {main_entry}", path=main_entry)
     pathex = [package_dir.parent.resolve()]
+
+    entry_path = spec_path.parent / "_scriptum_cli_entry.py"
+    entry_path.write_text(
+        "from scriptum.cli import main\n\nif __name__ == \"__main__\":\n    main()\n",
+        encoding="utf8",
+    )
 
     hooks_dir = project_root / "hooks"
     hook_paths = [hooks_dir.resolve()] if hooks_dir.exists() else []
@@ -467,7 +470,7 @@ def _generate_pyinstaller_spec(spec_path: pathlib.Path, project_root: pathlib.Pa
         hiddenimports = collect_submodules('scriptum')
 
         a = Analysis(
-            [{repr(str(main_entry))}],
+            [{repr(str(entry_path))}],
             pathex={_format_path_list(pathex)},
             binaries=[],
             datas=datas,
