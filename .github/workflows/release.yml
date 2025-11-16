@@ -47,8 +47,11 @@ jobs:
             exit "$status"
           fi
 
+      - name: Validate module entry point
+        run: uv run python -m scriptum --version
+
       - name: Build standalone binary
-        run: uv run scriptum package
+        run: uv run python -m scriptum package
 
       - name: Prepare binary artifact
         shell: python
