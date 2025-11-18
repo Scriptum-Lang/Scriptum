@@ -2,17 +2,23 @@
 
 ## [Unreleased]
 
-_Sem mudanças registradas._
+_No changes recorded yet._
+
+## [4.0.2] - 2025-11-08
+
+### Changed
+- Unix installer (`scripts/install.sh`) now safely replaces a previous `scriptum` installation in `~/.local/bin` and warns when another copy is found in a different directory, recommending `PATH` adjustments.
+- Installation documentation in `README.md` updated to explain behaviour when older versions are present on the system.
 
 ## [4.0.1] - 2025-11-07
 
 ### Added
-- Documentacao oficial dos codigos de erro do lexer, parser, analisador semantico e runtime (novo capitulo `docs/wiki/13_error_reporting.md`) com exemplos reais do formato `ERRO [CODIGO]`.
-- Guia consolidado de palavras-chave, operadores e funcoes builtin (`docs/wiki/14_keywords.md`), facilitando a consulta rapida da “tabela de comandos” da linguagem.
+- Official documentation for lexer, parser, semantic analyser, and runtime error codes (new chapter `docs/wiki/13_error_reporting.md`) with real examples in the `ERRO [CODE]` format.
+- Consolidated guide of keywords, operators, and builtin functions (`docs/wiki/14_keywords.md`), making it easier to consult the language's "command table".
 
 ### Changed
-- A funcao de entrada padrao passou a se chamar `principalis`, alinhando a sintaxe totalmente ao vocabulario em latim (CLI, exemplos e interprete).
-- O REPL e o modo `scriptum -c` agora suspendem snippets dentro de `functio principalis`, preservando declaracoes e variaveis entre execucoes em linha.
+- The default entry function has been renamed to `principalis`, aligning the syntax fully with Latin vocabulary (CLI, examples, and interpreter).
+- The REPL and `scriptum -c` now wrap snippets inside `functio principalis`, preserving declarations and variables across inline executions.
 
 ## [4.0.0] - 2025-11-06
 
@@ -31,19 +37,19 @@ _Sem mudanças registradas._
 ## [0.3.2] - 2025-11-05
 
 ### Added
-- Nova hierarquia de comandos `scriptum` alinhada a CLIs modernas: `run`, `build`, `package`, `check`, `fmt`, `test`, `doc` e grupo `dev`.
-- Execuções rápidas (`scriptum arquivo.stm`, `scriptum -c`, `scriptum -m`) e REPL experimental.
-- Documentação servível via `scriptum doc build/serve` e suporte a `scriptum package` (PyInstaller).
-- Alias de compatibilidade (`scriptum lex|parse|sema|ir|compile|build-lexer`) com avisos até a v0.4.0.
+- New `scriptum` command hierarchy aligned with modern CLIs: `run`, `build`, `package`, `check`, `fmt`, `test`, `doc`, and the `dev` group.
+- Fast execution flows (`scriptum file.stm`, `scriptum -c`, `scriptum -m`) and an experimental REPL.
+- Documentation can now be built/served via `scriptum doc build/serve`, with `scriptum package` (PyInstaller) support.
+- Compatibility aliases (`scriptum lex|parse|sema|ir|compile|build-lexer`) kept with warnings until v0.4.0.
 
 ### Changed
-- `scriptum dev <subcmd>` passou a agrupar ferramentas de inspeção (lex, AST, IR, tokens, build-lexer, bench).
-- Scripts de smoke-test, README, wiki e exemplos foram atualizados para refletir o novo fluxo.
-- Versão do projeto atualizada para `0.3.2`.
-- CLI agora emite relatórios de erro padronizados com códigos/trechos para facilitar depuração.
+- `scriptum dev <subcmd>` now groups inspection tools (lex, AST, IR, tokens, build-lexer, bench).
+- Smoke-test scripts, README, wiki, and examples updated to reflect the new flow.
+- Project version bumped to `0.3.2`.
+- CLI now emits standardised error reports with codes/snippets to simplify debugging.
 
 ### Fixed
-- Mensagens de erros e diagnósticos agora são consistentes entre os novos comandos de alto nível e os utilitários em `dev`.
+- Error messages and diagnostics are now consistent between the new high-level commands and the utilities under `dev`.
 
 ## [0.3.1] - 2025-11-05
 

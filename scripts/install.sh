@@ -104,17 +104,24 @@ PY
 }
 
 install_binary() {
-  local target_dir target_path
+  local target_dir target_path existing_bin
   target_dir="${HOME}/.local/bin"
+  existing_bin="$(command -v scriptum 2>/dev/null || true)"
+
   if [ -d "$target_dir" ]; then
     target_path="${target_dir}/scriptum"
+
+    if [ -f "$target_path" ]; then
+      echo "Found existing Scriptum at ${target_path}; replacing it with the new version..."
+    fi
+
     mv "$TMP_FILE" "$target_path"
     echo "Installed Scriptum to ${target_path}"
 
     if [[ ":${PATH}:" != *":${target_dir}:"* ]]; then
       echo "Warning: ${target_dir} is not on your PATH."
-      echo "Add the following to your shell profile (e.g., ~/.bashrc):"
-      echo "  export PATH=\"\$PATH:${target_dir}\""
+      echo "Add the following to your shell profile (e.g., ~/.zshrc or ~/.bashrc):"
+      echo "  export PATH=\"${target_dir}:\$PATH\""
     fi
   else
     target_path="${PWD}/scriptum"
@@ -122,6 +129,11 @@ install_binary() {
     echo "Saved Scriptum binary to ${target_path}"
     echo "Consider moving it to /usr/local/bin with:"
     echo "  sudo mv ${target_path} /usr/local/bin/"
+  fi
+
+  if [ -n "$existing_bin" ] && [ "$existing_bin" != "$target_path" ]; then
+    echo "Warning: another Scriptum installation was found at ${existing_bin}."
+    echo "If it is an older version, remove it or adjust your PATH so that ${target_path%/*} comes first."
   fi
 }
 

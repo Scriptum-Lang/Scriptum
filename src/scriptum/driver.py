@@ -75,7 +75,7 @@ except ImportError:  # pragma: no cover - standalone PyInstaller execution
     SemanticAnalyzer = sema_module.SemanticAnalyzer
     SemanticDiagnostic = sema_module.SemanticDiagnostic
 
-VERSION = "4.0.1"
+VERSION = "4.0.2"
 CommandHandler = Callable[[argparse.Namespace], int]
 
 
