@@ -8,7 +8,7 @@ Scriptum e uma linguagem com sintaxe inspirada em JavaScript, palavras-chave em 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/Scriptum-Lang/Scriptum/main/scripts/install.sh | bash
    ```
-   O script detecta seu sistema, baixa o binario `scriptum`, instala em `~/.local/bin` (ou sugere `/usr/local/bin`) e orienta sobre o `PATH`. Se ja existir um `scriptum` em `~/.local/bin`, ele sera substituido pela nova versao; caso outra instalacao seja encontrada em um diretorio diferente, o instalador exibe um aviso recomendando ajustar o `PATH` ou remover a copia antiga.
+   O script detecta seu sistema, baixa o binario `scriptum`, instala em `~/.local/bin` (ou sugere `/usr/local/bin`) e orienta sobre o `PATH`. Se ja existir um `scriptum` em `~/.local/bin`, ele sera substituido pela nova versao; caso outra instalacao seja encontrada em um diretorio diferente, o instalador exibe um aviso, pergunta se voce deseja remover a copia antiga e recomenda ajustar o `PATH` se necessario.
 
 2. **Script de instalacao (Windows PowerShell)**  
    ```powershell

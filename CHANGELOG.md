@@ -7,8 +7,8 @@ _No changes recorded yet._
 ## [4.0.2] - 2025-11-08
 
 ### Changed
-- Unix installer (`scripts/install.sh`) now safely replaces a previous `scriptum` installation in `~/.local/bin` and warns when another copy is found in a different directory, recommending `PATH` adjustments.
-- Installation documentation in `README.md` updated to explain behaviour when older versions are present on the system.
+- Unix installer (`scripts/install.sh`) now safely replaces a previous `scriptum` installation in `~/.local/bin` and, when another copy is found in a different directory, interactively offers to remove the older binary or keep it while recommending `PATH` adjustments.
+- Installation documentation in `README.md` updated to explain behaviour when older versions are present on the system and the optional removal prompt.
 
 ## [4.0.1] - 2025-11-07
 

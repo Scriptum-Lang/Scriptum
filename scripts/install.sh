@@ -133,7 +133,31 @@ install_binary() {
 
   if [ -n "$existing_bin" ] && [ "$existing_bin" != "$target_path" ]; then
     echo "Warning: another Scriptum installation was found at ${existing_bin}."
-    echo "If it is an older version, remove it or adjust your PATH so that ${target_path%/*} comes first."
+    echo "This may be an older version that appears earlier on your PATH."
+    while :; do
+      printf "Do you want to remove the old Scriptum binary at %s? [y/N] " "${existing_bin}"
+      read -r reply || reply=""
+      case "$reply" in
+        [Yy]*)
+          if rm -f "${existing_bin}" 2>/dev/null; then
+            echo "Removed old Scriptum binary at ${existing_bin}."
+          else
+            echo "Failed to remove ${existing_bin} (insufficient permissions?)."
+            echo "You may need to run:"
+            echo "  sudo rm \"${existing_bin}\""
+          fi
+          break
+          ;;
+        [Nn]*|"")
+          echo "Keeping existing binary at ${existing_bin}."
+          echo "Ensure that ${target_path%/*} appears before it on your PATH."
+          break
+          ;;
+        *)
+          echo "Please answer 'y' or 'n'."
+          ;;
+      esac
+    done
   fi
 }
 
