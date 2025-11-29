@@ -22,7 +22,7 @@ except Exception:  # pragma: no cover - fallback when dependency is missing
     Figlet = None
 
 from . import __version__, errors, tokens
-from .codegen import generate
+from .codegen import generate, generate_llvm
 from .driver import CompilerDriver, Stage
 from .ir import format_module_ir
 from .lexer.lexer import ScriptumLexer
@@ -474,18 +474,26 @@ def repl_cmd() -> None:
 @click.argument("source", type=SCRIPTUM_FILE, required=True)
 @click.option(
     "--emit",
-    type=click.Choice(["fmt", "ir"]),
+    type=click.Choice(["fmt", "ir", "llvm"]),
     default="fmt",
     show_default=True,
     help="Select the artifact to emit.",
 )
 @click.option("--out", "output_path", type=click.Path(dir_okay=False, path_type=pathlib.Path))
 def build_cmd(source: pathlib.Path, emit: str, output_path: Optional[pathlib.Path]) -> None:
-    result = _run_driver(source, Stage.CODEGEN)
-    if emit == "ir":
-        payload = format_module_ir(result.ir) if result.ir else "{}"
+    if emit == "llvm":
+        result = _run_driver(source, Stage.IR)
+        if result.ir:
+            llvm_output = generate_llvm(result.ir)
+            payload = llvm_output.llvm
+        else:
+            payload = ""
     else:
-        payload = result.formatted or ""
+        result = _run_driver(source, Stage.CODEGEN)
+        if emit == "ir":
+            payload = format_module_ir(result.ir) if result.ir else "{}"
+        else:
+            payload = result.formatted or ""
     _write_payload(payload, output_path)
 
 
