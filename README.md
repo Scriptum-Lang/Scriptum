@@ -91,42 +91,41 @@ Lexer, parser e analise semantica estao estaveis para programas pequenos. A gera
 
 #### Bytecode (stack VM em Python)
 
-- scriptum run --backend=bytecode executa o IR estrutural em uma pequena VM de bytecode. O compilador (scriptum.bytecode) converte ModuleIr em instru??es de pilha (PUSH_CONST, JUMP, CALL, etc.) e o interpretador (BytecodeVM) reusa as implementa??es dos builtins existentes.
-- A su?te dedicada vive em 	ests/test_bytecode_backend.py e abrange retornos literais, loops (dum, range, perge) e chamadas para summa. Rode python -m pytest tests/test_bytecode_backend.py.
-- scriptum build --backend bytecode --emit bytecode imprime uma listagem textual das instru??es (?til para depura??o).
+- scriptum run --backend=bytecode executa o IR estrutural em uma pequena VM de bytecode. O compilador (scriptum.bytecode) converte ModuleIr em instruções de pilha (PUSH_CONST, JUMP, CALL, etc.) e o interpretador (BytecodeVM) reusa as implementações dos builtins existentes.
+- A suíte dedicada vive em tests/test_bytecode_backend.py e abrange retornos literais, loops (dum, frange, perge) e chamadas para summa. Rode python -m pytest tests/test_bytecode_backend.py.
+- scriptum build --backend bytecode --emit bytecode imprime uma listagem textual das instruções (útil para depuração).
 
 #### LLVM textual + runtime em C
 
-- O runtime mora em src/scriptum/runtime/ (declara??es em 
-untime.h, implementa??o em llvm_rt.c). Ele exp?e scriptum_value (variant usado pelo gerador) e helpers para textos, arrays, objetos, opcionais e lambdas.
-- Utilize scripts/build_runtime.sh para compilar llvm_rt.c em uild/libscriptum_rt.{a,so} (o script escolhe automaticamente .dll no Windows). Passe CC=<compiler> e/ou CFLAGS para configura??es customizadas.
-- Testes b?sicos podem ser executados com python -m pytest tests/test_runtime_llvm.py, que compila a biblioteca compartilhada em diret?rio tempor?rio e valida construtores/arrays/textos via ctypes. O teste ser? ignorado automaticamente caso n?o exista um compilador C acess?vel.
-- O gerador LLVM (scriptum.codegen.llvm) opera integralmente sobre scriptum_value, internando textos e delegando arrays/objetos ao runtime. Os testes de gera??o (python -m pytest tests/test_llvm_codegen.py) cobrem fun??es, dum, pro in, arrays, strings e ??.
-- H? uma su?te de snapshots em 	ests/backend_llvm/ (ex.: asic_valid, loops) que garante estabilidade do IR textual; execute python -m pytest tests/backend_llvm para validar.
-- scriptum build --emit llvm --verify-llvm e scriptum dev llvm --verify executam llvm-as (quando dispon?vel) para validar o IR emitido e reportam erros amig?veis caso o bin?rio n?o esteja instalado; ao definir SCRIPTUM_BACKEND=llvm, scriptum build passa a emitir LLVM por padr?o.
-- scriptum run --backend=llvm (ou SCRIPTUM_BACKEND=llvm) compila automaticamente o runtime, gera o IR textual, invoca lli com uma ponte que serializa o resultado em JSON e volta para a VM quando lli ou o compilador C n?o estiverem dispon?veis (avisando o usu?rio). Passe --strict-backend ou defina SCRIPTUM_BACKEND_STRICT=1 para falhar imediatamente caso o backend n?o consiga ser usado.
+- O runtime mora em src/scriptum/runtime/ (declarações em runtime.h, implementação em llvm_rt.c). Ele expõe scriptum_value (variant usado pelo gerador) e helpers para textos, arrays, objetos, opcionais e lambdas.
+- Utilize scripts/build_runtime.sh para compilar llvm_rt.c em build/libscriptum_rt.{a,so} (o script escolhe automaticamente .dll no Windows). Passe CC=<compiler> e/ou CFLAGS para configurações customizadas.
+- Testes básicos podem ser executados com python -m pytest tests/test_runtime_llvm.py, que compila a biblioteca compartilhada em diretório temporário e valida construtores/arrays/textos via ctypes. O teste será ignorado automaticamente caso não exista um compilador C acessível.
+- O gerador LLVM (scriptum.codegen.llvm) opera integralmente sobre scriptum_value, internando textos e delegando arrays/objetos ao runtime. Os testes de geração (python -m pytest tests/test_llvm_codegen.py) cobrem funções, dum, pro in, arrays, strings e ??.
+- Há uma suíte de snapshots em tests/backend_llvm/ (ex.: basic_valid, loops) que garante estabilidade do IR textual; execute python -m pytest tests/backend_llvm para validar.
+- scriptum build --emit llvm --verify-llvm e scriptum dev llvm --verify executam llvm-as (quando disponível) para validar o IR emitido e reportam erros amigáveis caso o binário não esteja instalado; ao definir SCRIPTUM_BACKEND=llvm, scriptum build passa a emitir LLVM por padrão.
+- scriptum run --backend=llvm (ou SCRIPTUM_BACKEND=llvm) compila automaticamente o runtime, gera o IR textual, invoca lli com uma ponte que serializa o resultado em JSON e volta para a VM quando lli ou o compilador C não estiverem disponíveis (avisando o usuário). Passe --strict-backend ou defina SCRIPTUM_BACKEND_STRICT=1 para falhar imediatamente caso o backend não consiga ser usado.
 
 #### LLVM C++ (pybind11 + GoogleTest)
 
-- cpp/llvm_codegen/ abriga o backend em C++: um emissor m?nimo (scriptum::SimpleModuleEmitter) que gera llvm::Module para fun??es que retornam literais ou somas de literais, os bindings em pybind11 (scriptum_codegen_llvm_cpp_py) e a su?te do GoogleTest (	ests/SimpleModuleTests.cpp).
-- Use python scripts/build_cpp_backend.py para configurar/compilar o backend e rodar os testes (cmake + llvm-config precisam estar dispon?veis). O script detecta automaticamente LLVM_DIR/llvm-config e ignora o build quando o toolchain n?o estiver instalado.
-- Ap?s o build, a CLI localiza automaticamente a biblioteca em cpp/llvm_codegen/build. Caso use outro diret?rio, defina SCRIPTUM_LLVM_CPP_PATH apontando para a pasta que cont?m scriptum_codegen_llvm_cpp_py.*.
-- scriptum run --backend=llvm-cpp reutiliza o mesmo pipeline do backend textual: gera o m?dulo em C++, serializa para LLVM IR, invoca lli e retorna o resultado em JSON. Quando o binding n?o estiver dispon?vel, o CLI recai para a VM (a menos que --strict-backend esteja ativo).
-- scriptum build --backend llvm-cpp --emit llvm usa o emissor em C++ para gerar o IR textual, permitindo comparar facilmente as sa?das dos dois backends.
+- cpp/llvm_codegen/ abriga o backend em C++: um emissor mínimo (scriptum::SimpleModuleEmitter) que gera llvm::Module para funções que retornam literais ou somas de literais, os bindings em pybind11 (scriptum_codegen_llvm_cpp_py) e a suíte do GoogleTest (tests/SimpleModuleTests.cpp).
+- Use python scripts/build_cpp_backend.py para configurar/compilar o backend e rodar os testes (cmake + llvm-config precisam estar disponíveis). O script detecta automaticamente LLVM_DIR/llvm-config e ignora o build quando o toolchain não estiver instalado.
+- Após o build, a CLI localiza automaticamente a biblioteca em cpp/llvm_codegen/build. Caso use outro diretório, defina SCRIPTUM_LLVM_CPP_PATH apontando para a pasta que contém scriptum_codegen_llvm_cpp_py.*.
+- scriptum run --backend=llvm-cpp reutiliza o mesmo pipeline do backend textual: gera o módulo em C++, serializa para LLVM IR, invoca lli e retorna o resultado em JSON. Quando o binding não estiver disponível, o CLI recai para a VM (a menos que --strict-backend esteja ativo).
+- scriptum build --backend llvm-cpp --emit llvm usa o emissor em C++ para gerar o IR textual, permitindo comparar facilmente as saídas dos dois backends.
 
 #### Requisitos dos backends
 
-- **VM estrutural**: sem depend?ncias extras. Este ? o backend padr?o.
-- **Bytecode**: roda inteiramente em Python; nenhuma ferramenta adicional ? necess?ria.
+- **VM estrutural**: sem dependências extras. Este é o backend padrão.
+- **Bytecode**: roda inteiramente em Python; nenhuma ferramenta adicional é necessária.
 - **LLVM textual**:
-  1. Compilador C acess?vel (cc, clang ou gcc). O CLI compila src/scriptum/runtime/llvm_rt.c on-demand; ajuste CC se precisar de um bin?rio espec?fico.
+  1. Compilador C acessível (cc, clang ou gcc). O CLI compila src/scriptum/runtime/llvm_rt.c on-demand; ajuste CC se precisar de um binário específico.
   2. llvm-as para verificar o IR textual (opcional, mas recomendado).
   3. lli para executar o IR quando --backend=llvm for escolhido.
-  4. Opcionalmente, defina as vari?veis LLVM_AS ou LLI apontando para os execut?veis caso eles n?o estejam no PATH.
+  4. Opcionalmente, defina as variáveis LLVM_AS ou LLI apontando para os executáveis caso eles não estejam no PATH.
 - **LLVM C++**:
-  1. Toolchain C++ (cmake + compilador) e as bibliotecas do LLVM dispon?veis via LLVM_DIR ou llvm-config.
-  2. pybind11 e o GoogleTest s?o baixados automaticamente pelo CMake via FetchContent.
-  3. Execute python scripts/build_cpp_backend.py para gerar scriptum_codegen_llvm_cpp_py.* e scriptum_codegen_llvm_cpp_tests em cpp/llvm_codegen/build. A CLI procura automaticamente o m?dulo nesse diret?rio; use SCRIPTUM_LLVM_CPP_PATH para apontar para builds personalizados.
+  1. Toolchain C++ (cmake + compilador) e as bibliotecas do LLVM disponíveis via LLVM_DIR ou llvm-config.
+  2. pybind11 e o GoogleTest são baixados automaticamente pelo CMake via FetchContent.
+  3. Execute python scripts/build_cpp_backend.py para gerar scriptum_codegen_llvm_cpp_py.* e scriptum_codegen_llvm_cpp_tests em cpp/llvm_codegen/build. A CLI procura automaticamente o módulo nesse diretório; use SCRIPTUM_LLVM_CPP_PATH para apontar para builds personalizados.
 
 Quando alguma ferramenta estiver ausente, o CLI exibe uma mensagem clara e recai automaticamente para a VM estrutural (a menos que --strict-backend/SCRIPTUM_BACKEND_STRICT=1 tenham sido ativados).
 
