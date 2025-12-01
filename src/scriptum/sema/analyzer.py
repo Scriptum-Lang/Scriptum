@@ -19,6 +19,13 @@ class SemanticDiagnostic:
     span: Optional[Span]
 
 
+@dataclass(slots=True)
+class AnalysisResult:
+    diagnostics: List[SemanticDiagnostic]
+    type_info: Dict[int, types.Type]
+    member_bindings: Dict[int, builtins.MethodBinding]
+
+
 class SemanticAnalyzer:
     def __init__(self) -> None:
         self.symbols = symbols.SymbolTable()
@@ -27,14 +34,16 @@ class SemanticAnalyzer:
         self.loop_depth: int = 0
         self.function_signatures: Dict[str, Tuple[List[types.Type], Optional[types.Type]]] = {}
         self._member_bindings: Dict[int, builtins.MethodBinding] = {}
+        self._type_info: Dict[int, types.Type] = {}
 
-    def analyze(self, module: nodes.Module) -> List[SemanticDiagnostic]:
+    def analyze(self, module: nodes.Module) -> AnalysisResult:
         self.diagnostics.clear()
         self.symbols = symbols.SymbolTable()
         self.function_signatures = {}
         self.current_return_type = None
         self.loop_depth = 0
         self._member_bindings = {}
+        self._type_info = {}
         self._declare_builtins()
 
         for declaration in module.declarations:
@@ -46,7 +55,11 @@ class SemanticAnalyzer:
                 self._analyze_function(declaration)
             elif isinstance(declaration, nodes.VariableDeclaration):
                 self._analyze_variable(declaration)
-        return list(self.diagnostics)
+        return AnalysisResult(
+            diagnostics=list(self.diagnostics),
+            type_info=dict(self._type_info),
+            member_bindings=dict(self._member_bindings),
+        )
 
     def _register_function(self, func: nodes.FunctionDeclaration) -> None:
         param_types = [
@@ -72,6 +85,12 @@ class SemanticAnalyzer:
                 )
             )
 
+    def _record_type(self, node: Optional[nodes.Node], inferred: Optional[types.Type]) -> Optional[types.Type]:
+        if node is None or inferred is None:
+            return inferred
+        self._type_info[node.node_id] = inferred
+        return inferred
+
     def _analyze_function(self, func: nodes.FunctionDeclaration) -> None:
         signature = self.function_signatures.get(func.name)
         param_types = signature[0] if signature else [
@@ -90,6 +109,8 @@ class SemanticAnalyzer:
             param_type = param_types[index] if index < len(param_types) else (
                 self._annotation_to_type(param.type_annotation) or types.PRIMITIVE_TYPES["quodlibet"]
             )
+            if param_type:
+                self._record_type(param, param_type)
             if not self.symbols.declare(symbols.Symbol(param.name, param_type, mutable=False, span=param.span)):
                 self._error("S110", f"Parameter '{param.name}' already declared in this scope", param.span)
         for stmt in func.body.statements:
@@ -103,6 +124,7 @@ class SemanticAnalyzer:
         init_type = self._analyze_expression(decl.initializer) if decl.initializer else None
         annotated_type = self._annotation_to_type(decl.type_annotation)
         var_type = annotated_type or init_type or types.PRIMITIVE_TYPES["quodlibet"]
+        self._record_type(decl, var_type)
 
         if annotated_type and init_type and not annotated_type.is_assignable_from(init_type):
             self._error(
@@ -148,6 +170,8 @@ class SemanticAnalyzer:
             element_type = self._iterable_element_type(iterable_type, stmt.iterable.span)
             target_annotation = self._annotation_to_type(stmt.target.type_annotation)
             target_type = target_annotation or element_type
+            if target_type:
+                self._record_type(stmt.target, target_type)
             if target_annotation and not target_annotation.is_assignable_from(element_type):
                 self._error(
                     "T031",
@@ -174,55 +198,60 @@ class SemanticAnalyzer:
         if expr is None:
             return None
         if isinstance(expr, nodes.Literal):
-            return types.type_from_literal(expr.value, expr.raw)
+            inferred = types.type_from_literal(expr.value, expr.raw)
+            return self._record_type(expr, inferred)
         if isinstance(expr, nodes.Identifier):
             symbol = self.symbols.lookup(expr.name)
             if symbol is None:
                 self._error("S100", f"Undeclared identifier '{expr.name}'", expr.span)
-                return types.PRIMITIVE_TYPES["quodlibet"]
-            return symbol.type
+                return self._record_type(expr, types.PRIMITIVE_TYPES["quodlibet"])
+            return self._record_type(expr, symbol.type)
         if isinstance(expr, nodes.UnaryExpression):
-            return self._analyze_unary(expr)
+            return self._record_type(expr, self._analyze_unary(expr))
         if isinstance(expr, nodes.AssignmentExpression):
-            return self._analyze_assignment(expr)
+            return self._record_type(expr, self._analyze_assignment(expr))
         if isinstance(expr, nodes.BinaryExpression):
-            return self._analyze_binary(expr)
+            return self._record_type(expr, self._analyze_binary(expr))
         if isinstance(expr, nodes.CallExpression):
-            return self._analyze_call(expr)
+            return self._record_type(expr, self._analyze_call(expr))
         if isinstance(expr, nodes.MemberExpression):
             object_type = self._analyze_expression(expr.object)
             binding = self._bind_member_builtin(expr, object_type)
             if binding:
                 self._member_bindings[expr.node_id] = binding
-                return types.function_type([param.type for param in binding.parameters], binding.return_type)
-            return types.PRIMITIVE_TYPES["quodlibet"]
+                inferred = types.function_type([param.type for param in binding.parameters], binding.return_type)
+            else:
+                inferred = types.PRIMITIVE_TYPES["quodlibet"]
+            return self._record_type(expr, inferred)
         if isinstance(expr, nodes.IndexExpression):
             collection_type = self._analyze_expression(expr.collection)
             self._analyze_expression(expr.index)
-            if collection_type and collection_type.kind is types.TypeKind.ARRAY and collection_type.element:
-                return collection_type.element
-            return types.PRIMITIVE_TYPES["quodlibet"]
+            inferred = collection_type.element if (
+                collection_type and collection_type.kind is types.TypeKind.ARRAY and collection_type.element
+            ) else types.PRIMITIVE_TYPES["quodlibet"]
+            return self._record_type(expr, inferred)
         if isinstance(expr, nodes.ConditionalExpression):
             condition_type = self._analyze_expression(expr.condition)
             self._expect_boolean(condition_type, expr.condition.span, "T130", "Condition for '?:' must be booleanum")
             consequent = self._analyze_expression(expr.consequent)
             alternate = self._analyze_expression(expr.alternate)
             filtered = [t for t in (consequent, alternate) if t]
-            return types.least_restrictive(filtered) if filtered else types.PRIMITIVE_TYPES["quodlibet"]
+            inferred = types.least_restrictive(filtered) if filtered else types.PRIMITIVE_TYPES["quodlibet"]
+            return self._record_type(expr, inferred)
         if isinstance(expr, nodes.ArrayLiteral):
             element_types = [self._analyze_expression(element) for element in expr.elements]
             filtered = [t for t in element_types if t]
             element_type = types.least_restrictive(filtered) if filtered else types.PRIMITIVE_TYPES["quodlibet"]
-            return types.Type(types.TypeKind.ARRAY, element=element_type)
+            return self._record_type(expr, types.Type(types.TypeKind.ARRAY, element=element_type))
         if isinstance(expr, nodes.ObjectLiteral):
             value_types = {
                 prop.key: self._analyze_expression(prop.value) or types.PRIMITIVE_TYPES["quodlibet"]
                 for prop in expr.properties
             }
-            return types.Type(types.TypeKind.OBJECT, fields=value_types)
+            return self._record_type(expr, types.Type(types.TypeKind.OBJECT, fields=value_types))
         if isinstance(expr, nodes.LambdaExpression):
-            return types.PRIMITIVE_TYPES["quodlibet"]
-        return types.PRIMITIVE_TYPES["quodlibet"]
+            return self._record_type(expr, types.PRIMITIVE_TYPES["quodlibet"])
+        return self._record_type(expr, types.PRIMITIVE_TYPES["quodlibet"])
 
     def _bind_member_builtin(
         self, expr: nodes.MemberExpression, object_type: Optional[types.Type]
@@ -259,6 +288,8 @@ class SemanticAnalyzer:
                 target_type = symbol.type
                 if not symbol.mutable:
                     self._error("S120", f"Cannot assign to immutable symbol '{expr.target.name}'", expr.span)
+            if target_type:
+                self._record_type(expr.target, target_type)
         else:
             target_type = self._analyze_expression(expr.target)
         value_type = self._analyze_expression(expr.value)

@@ -1,0 +1,4 @@
+functio principalis() -> textus {
+    mutabilis textus base = "salve, mundi";
+    redde base;
+}

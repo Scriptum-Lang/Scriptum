@@ -4,6 +4,21 @@
 
 _No changes recorded yet._
 
+## [4.0.3] - 2025-12-01
+
+### Added
+- Backend de bytecode baseado em pilha (`scriptum.bytecode`) com VM própria (`BytecodeVM`), selecionável via `scriptum run --backend=bytecode`, além da listagem textual produzida por `scriptum build --backend bytecode --emit bytecode`. Novos testes (`tests/test_bytecode_backend.py`) abrangem loops, `frange/perge` e builtins como `summa`.
+- Protótipo do backend LLVM em C++ composto por `scriptum::SimpleModuleEmitter`, bindings pybind11 (`scriptum_codegen_llvm_cpp_py`) e suíte GoogleTest (`cpp/llvm_codegen/tests/SimpleModuleTests.cpp`). O script `python scripts/build_cpp_backend.py` automatiza configuração, compilação e testes sempre que `LLVM_DIR`/`llvm-config` estiver disponível.
+- Documentação do ecossistema de backends (README, wiki) detalhando `vm`, `bytecode`, `llvm` e `llvm-cpp`, novos requisitos e fluxos de fallback. `RELEASING.md` recebeu um checklist específico para v4.0.3.
+
+### Changed
+- O CLI aceita `--backend vm|bytecode|llvm|llvm-cpp` e variáveis `SCRIPTUM_BACKEND/SCRIPTUM_BACKEND_STRICT` agora contemplam os quatro modos. `_run_llvm_ir` centraliza o fluxo com `lli`, simplificando fallbacks.
+- Processo de release automatizado requer atualização do changelog (seção 4.0.3), execução opcional de `scripts/build_cpp_backend.py` e validação do backend C++ antes de subir a tag.
+- README/cpp/README refletem o novo script de build, instruções para `SCRIPTUM_LLVM_CPP_PATH` e orientam usuários sobre quando compilar o backend nativo.
+
+### Fixed
+- O otimizador local (`scriptum.optimizations.LocalOptimizer`) passa a realizar folding de `??`, `&&`, `||` mesmo quando apenas o operando esquerdo é literal, reduzindo IR redundante antes de qualquer backend.
+
 ## [4.0.2] - 2025-11-08
 
 ### Changed

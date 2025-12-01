@@ -1,0 +1,16 @@
+functio principalis() -> numerus {
+    mutabilis xs = [1, 2];
+    xs.adde(3);
+    xs.extende([4, 5]);
+    xs.inserta(0, 0);
+    xs.remove(2);
+    xs.purga();
+    xs.adde(9);
+
+    mutabilis partes = "a,b,c".divide(",");
+    mutabilis unido = ", ".coniunge(partes);
+    mutabilis mutatus = unido.substitue("a", "x");
+    mutabilis formatado = mutatus.ad_maiusculas().abscinde();
+
+    redde longitudo(partes) + longitudo(formatado);
+}

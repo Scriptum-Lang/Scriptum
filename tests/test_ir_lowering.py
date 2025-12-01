@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scriptum.ir import format_module_ir, lower_module
 from scriptum.parser.parser import ScriptumParser
+from scriptum.sema.analyzer import SemanticAnalyzer
 from scriptum.text import SourceFile
 
 FIXTURES_DIR = Path(__file__).resolve().parents[0] / 'fixtures' / 'ir'
@@ -14,7 +15,9 @@ def _lower_source(source: str) -> str:
     parser = ScriptumParser()
     normalized = textwrap.dedent(source).strip() + '\n'
     module = parser.parse(SourceFile('<test>', normalized))
-    ir_module = lower_module(module)
+    analyzer = SemanticAnalyzer()
+    analysis = analyzer.analyze(module)
+    ir_module = lower_module(module, type_info=analysis.type_info, member_bindings=analysis.member_bindings)
     return format_module_ir(ir_module)
 
 

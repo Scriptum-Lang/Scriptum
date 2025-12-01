@@ -1,0 +1,5 @@
+functio principalis() -> numerus {
+    mutabilis array numbers = [10, 20, 30];
+    mutabilis numerus total = summa(numbers);
+    redde total;
+}

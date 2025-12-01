@@ -22,7 +22,9 @@ except Exception:  # pragma: no cover - fallback when dependency is missing
     Figlet = None
 
 from . import __version__, errors, tokens
-from .codegen import generate
+from .bytecode import BytecodeCompileError, BytecodeVM, compile_module, format_bytecode
+from .codegen import generate, generate_llvm
+from .codegen.llvm_cpp import LLVMCPPBackendError, LLVMCPPBackendUnavailable, generate_llvm_cpp
 from .driver import CompilerDriver, Stage
 from .ir import format_module_ir
 from .lexer.lexer import ScriptumLexer
@@ -97,6 +99,131 @@ def _fail_usage(message: str) -> None:
 
 def _fail_io(message: str, *, path: Optional[pathlib.Path] = None) -> None:
     _raise_cli_error("CLI_IO", message, path=path)
+
+
+def _locate_llvm_as() -> tuple[Optional[str], bool]:
+    override = os.environ.get("LLVM_AS")
+    if override:
+        resolved = shutil.which(override) or override
+        return resolved, True
+    return shutil.which("llvm-as"), False
+
+
+def _verify_llvm_ir(ir_text: str, *, module_name: Optional[str] = None) -> None:
+    tool, from_env = _locate_llvm_as()
+    if tool is None:
+        hint = "Defina LLVM_AS com o caminho do executável." if from_env else "Instale o pacote LLVM ou adicione 'llvm-as' ao PATH."
+        _raise_cli_error(
+            "CLI_LLVM_TOOL",
+            f"Não foi possível localizar 'llvm-as' para verificar o IR emitido. {hint}",
+        )
+    safe_name = (module_name or "scriptum").replace(os.sep, "_") or "scriptum"
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = pathlib.Path(tmpdir)
+            ir_path = tmp_root / f"{safe_name}.ll"
+            ir_path.write_text(ir_text, encoding="utf8")
+            bc_path = ir_path.with_suffix(".bc")
+            subprocess.run(
+                [tool, str(ir_path), "-o", str(bc_path)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+    except FileNotFoundError:
+        suffix = " (verifique a variável LLVM_AS)" if from_env else ""
+        _raise_cli_error(
+            "CLI_LLVM_TOOL",
+            f"O executável '{tool}' não pôde ser invocado{suffix}.",
+        )
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip()
+        message = "llvm-as reportou erro ao verificar o IR emitido."
+        if details:
+            message = f"{message}\n{details}"
+        _raise_cli_error("CLI_LLVM_VERIFY", message)
+
+
+def _locate_lli() -> tuple[Optional[str], bool]:
+    override = os.environ.get("LLI")
+    if override:
+        resolved = shutil.which(override) or override
+        return resolved, True
+    return shutil.which("lli"), False
+
+
+def _build_runtime_library(workdir: pathlib.Path) -> pathlib.Path:
+    candidates = [os.environ.get("CC"), "cc", "clang", "gcc"]
+    cc: Optional[str] = None
+    for candidate in candidates:
+        if not candidate:
+            continue
+        found = shutil.which(candidate)
+        if found:
+            cc = found
+            break
+    if cc is None:
+        _raise_cli_error(
+            "CLI_LLVM_TOOL",
+            "Compilador C (cc/clang/gcc) não encontrado para construir o runtime LLVM.",
+        )
+    project_root = _locate_project_root()
+    runtime_c = project_root / "src" / "scriptum" / "runtime" / "llvm_rt.c"
+    include_dir = project_root / "src"
+    suffix = ".dll" if os.name == "nt" else ".dylib" if sys.platform == "darwin" else ".so"
+    output = workdir / f"libscriptum_rt{suffix}"
+    cmd = [cc, "-O2", "-std=c99", "-I", str(include_dir), str(runtime_c), "-shared", "-o", str(output)]
+    if os.name != "nt":
+        cmd.insert(1, "-fPIC")
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        _raise_cli_error("CLI_LLVM_TOOL", f"Compilador '{cc}' não pôde ser executado.")
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip()
+        message = "Falha ao compilar o runtime LLVM."
+        if details:
+            message = f"{message}\n{details}"
+        _raise_cli_error("CLI_LLVM_TOOL", message)
+    return output
+
+
+
+def _append_llvm_entry_stub(ir_text: str, entry_point: str = "principalis") -> str:
+    stub = f"""
+declare void @scriptum_rt_dump(%scriptum.value)
+
+define i32 @main() {{
+  %result = call %scriptum.value @{entry_point}()
+  call void @scriptum_rt_dump(%scriptum.value %result)
+  ret i32 0
+}}
+""".strip()
+    return f"{ir_text.rstrip()}\n\n{stub}\n"
+
+
+SUPPORTED_BACKENDS = {"vm", "bytecode", "llvm", "llvm-cpp"}
+_STRICT_ENV_VALUES = {"1", "true", "yes", "on"}
+
+
+def _resolve_backend_choice(explicit: Optional[str]) -> str:
+    candidate = explicit or os.environ.get("SCRIPTUM_BACKEND")
+    if not candidate:
+        return "vm"
+    normalized = candidate.strip().lower()
+    if normalized not in SUPPORTED_BACKENDS:
+        allowed = ", ".join(sorted(SUPPORTED_BACKENDS))
+        _fail_usage(f"Backend '{candidate}' n?o suportado. Escolha entre: {allowed}.")
+    return normalized
+
+
+def _resolve_backend_strict(explicit: Optional[bool]) -> bool:
+    if explicit is not None:
+        return explicit
+    env_value = os.environ.get("SCRIPTUM_BACKEND_STRICT")
+    if env_value is None:
+        return False
+    return env_value.strip().lower() in _STRICT_ENV_VALUES
 
 
 DEFAULT_BANNER = """
@@ -414,16 +541,137 @@ def _run_driver(source: pathlib.Path, stage: Stage) -> CompilerDriver.Result:
     raise AssertionError("unreachable")  # pragma: no cover
 
 
+def _execute_vm(source: pathlib.Path) -> Any:
+    result = _run_driver(source, Stage.RUN)
+    execution = result.execution
+    return execution.value if execution else None
+
+def _backend_fallback(source: pathlib.Path, message: str, *, strict: bool) -> Any:
+    if strict:
+        _raise_cli_error("CLI_BACKEND", message, path=source)
+    click.secho(f"{message} Executando com a VM.", fg="yellow", err=True)
+    return _execute_vm(source)
+
+
+
+
+def _execute_with_bytecode_backend(source: pathlib.Path, *, strict: bool = False) -> Any:
+    ir_result = _run_driver(source, Stage.IR)
+    if ir_result.ir is None:
+        return _backend_fallback(source, "Nenhum IR gerado para este programa.", strict=strict)
+    try:
+        program = compile_module(ir_result.ir)
+    except BytecodeCompileError as exc:
+        return _backend_fallback(source, str(exc), strict=strict)
+    except errors.CompilerError as exc:
+        _handle_compiler_error(exc, source)
+    vm = BytecodeVM(program)
+    try:
+        return vm.run()
+    except errors.CompilerError as exc:
+        _handle_compiler_error(exc, source)
+    raise AssertionError("backend bytecode deveria retornar um valor")  # pragma: no cover
+
+
+def _run_llvm_ir(ir_text: str, source: pathlib.Path, *, strict: bool, module_name: str) -> Any:
+    llvm_with_entry = _append_llvm_entry_stub(ir_text)
+    lli_tool, from_env = _locate_lli()
+    if lli_tool is None:
+        hint = " (variavel LLI)" if from_env else ""
+        return _backend_fallback(source, f"'lli'{hint} nao encontrado.", strict=strict)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = pathlib.Path(tmpdir)
+        try:
+            runtime_lib = _build_runtime_library(tmpdir_path)
+        except ScriptumCLIError as exc:
+            return _backend_fallback(source, exc.report.message, strict=strict)
+        ir_path = tmpdir_path / f"{module_name or 'program'}.ll"
+        ir_path.write_text(llvm_with_entry, encoding="utf8")
+        result_file = tmpdir_path / "result.json"
+        env = os.environ.copy()
+        env["SCRIPTUM_LLVM_RESULT"] = str(result_file)
+        cmd = [lli_tool, f"-load={runtime_lib}", str(ir_path)]
+        try:
+            subprocess.run(cmd, check=True, env=env)
+        except FileNotFoundError:
+            return _backend_fallback(source, "Nao foi possivel executar 'lli'.", strict=strict)
+        except subprocess.CalledProcessError as exc:
+            details = (exc.stderr or exc.stdout or "").strip()
+            message = "Execucao via LLVM falhou."
+            if details:
+                message = f"{message}\n{details}"
+            return _backend_fallback(source, message, strict=strict)
+        if not result_file.exists():
+            return _backend_fallback(source, "Execucao LLVM nao gerou resultado.", strict=strict)
+        payload = result_file.read_text(encoding="utf8").strip() or "null"
+        try:
+            return json.loads(payload)
+        except json.JSONDecodeError:
+            return _backend_fallback(source, "Resultado LLVM invalido.", strict=strict)
+
+
+def _execute_with_llvm_backend(source: pathlib.Path, *, strict: bool = False) -> Any:
+    ir_result = _run_driver(source, Stage.IR)
+    if ir_result.ir is None:
+        return _backend_fallback(source, "Nenhum IR gerado para este programa.", strict=strict)
+    try:
+        llvm_output = generate_llvm(ir_result.ir, verify=False, module_name=source.stem)
+    except errors.CompilerError as exc:
+        _handle_compiler_error(exc, source)
+    return _run_llvm_ir(llvm_output.text, source, strict=strict, module_name=source.stem)
+
+
+
+
+def _execute_with_llvm_cpp_backend(source: pathlib.Path, *, strict: bool = False) -> Any:
+    ir_result = _run_driver(source, Stage.IR)
+    if ir_result.ir is None:
+        return _backend_fallback(source, "Nenhum IR gerado para este programa.", strict=strict)
+    try:
+        llvm_output = generate_llvm_cpp(ir_result.ir, module_name=source.stem)
+    except LLVMCPPBackendUnavailable as exc:
+        return _backend_fallback(source, str(exc), strict=strict)
+    except LLVMCPPBackendError as exc:
+        _handle_compiler_error(exc, source)
+    except errors.CompilerError as exc:
+        _handle_compiler_error(exc, source)
+    return _run_llvm_ir(llvm_output.text, source, strict=strict, module_name=source.stem)
+
+
+
 # ---------------------------------------------------------------------------
 # Primary workflow commands
 # ---------------------------------------------------------------------------
+
 
 
 @cli.command("run", help="Execute a Scriptum program from a file, snippet, or module.")
 @click.argument("source", type=SCRIPTUM_FILE, required=False)
 @click.option("-c", "--command", "inline_code", help="Inline Scriptum code to execute.")
 @click.option("-m", "--module", "module_name", help="Scriptum module to execute (dotted path).")
-def run_cmd(source: Optional[pathlib.Path], inline_code: Optional[str], module_name: Optional[str]) -> None:
+@click.option(
+    "--backend",
+    type=click.Choice(["vm", "bytecode", "llvm", "llvm-cpp"]),
+    default=None,
+    show_default=False,
+    help="Selecione o backend de execucao (padrao usa SCRIPTUM_BACKEND ou 'vm').",
+)
+@click.option(
+    "--strict-backend/--no-strict-backend",
+    default=None,
+    show_default=False,
+    help="Falhar em vez de voltar para a VM quando o backend escolhido nao puder ser usado. "
+    "Quando omitido, respeita SCRIPTUM_BACKEND_STRICT ou permite fallback automatico.",
+)
+@click.pass_context
+def run_cmd(
+    ctx: click.Context,
+    source: Optional[pathlib.Path],
+    inline_code: Optional[str],
+    module_name: Optional[str],
+    backend: Optional[str],
+    strict_backend: Optional[bool],
+) -> None:
     provided = sum(val is not None for val in (source, inline_code, module_name))
     if provided == 0:
         _fail_usage("Provide a .stm file, -c, or -m.")
@@ -438,14 +686,22 @@ def run_cmd(source: Optional[pathlib.Path], inline_code: Optional[str], module_n
     elif module_name:
         source = _resolve_module(module_name)
 
+    resolved_backend = _resolve_backend_choice(backend)
+    strict_choice = _resolve_backend_strict(strict_backend)
+
     try:
-        result = _run_driver(source, Stage.RUN)
+        if resolved_backend == "llvm":
+            value = _execute_with_llvm_backend(source, strict=strict_choice)
+        elif resolved_backend == "bytecode":
+            value = _execute_with_bytecode_backend(source, strict=strict_choice)
+        elif resolved_backend == "llvm-cpp":
+            value = _execute_with_llvm_cpp_backend(source, strict=strict_choice)
+        else:
+            value = _execute_vm(source)
     finally:
         if delete_source and delete_source.exists():
             delete_source.unlink(missing_ok=True)
 
-    execution = result.execution
-    value = execution.value if execution else None
     click.echo(json.dumps(value, ensure_ascii=False))
 
 
@@ -470,22 +726,88 @@ def repl_cmd() -> None:
             click.secho(exc.report.format_cli_text(), fg="red")
 
 
+
 @cli.command("build", help="Compile a Scriptum program and emit a formatted file or IR.")
 @click.argument("source", type=SCRIPTUM_FILE, required=True)
 @click.option(
+    "--backend",
+    type=click.Choice(["vm", "bytecode", "llvm", "llvm-cpp"]),
+    default=None,
+    show_default=False,
+    help="Selecione o backend preferido (padrao usa SCRIPTUM_BACKEND ou 'vm').",
+)
+@click.option(
     "--emit",
-    type=click.Choice(["fmt", "ir"]),
-    default="fmt",
-    show_default=True,
-    help="Select the artifact to emit.",
+    type=click.Choice(["fmt", "ir", "llvm", "bytecode"]),
+    default=None,
+    show_default=False,
+    help="Artefato a emitir (padrao: 'fmt' para backend vm e 'llvm' para backend llvm).",
 )
 @click.option("--out", "output_path", type=click.Path(dir_okay=False, path_type=pathlib.Path))
-def build_cmd(source: pathlib.Path, emit: str, output_path: Optional[pathlib.Path]) -> None:
-    result = _run_driver(source, Stage.CODEGEN)
-    if emit == "ir":
-        payload = format_module_ir(result.ir) if result.ir else "{}"
-    else:
+@click.option(
+    "--verify-llvm/--no-verify-llvm",
+    default=False,
+    show_default=True,
+    help="Run LLVM verifier when emitting LLVM IR.",
+)
+def build_cmd(
+    source: pathlib.Path,
+    emit: Optional[str],
+    output_path: Optional[pathlib.Path],
+    verify_llvm: bool,
+    backend: Optional[str],
+) -> None:
+    resolved_backend = _resolve_backend_choice(backend)
+    backend_default = {
+        "vm": "fmt",
+        "bytecode": "bytecode",
+        "llvm": "llvm",
+        "llvm-cpp": "llvm",
+    }
+    artifact = emit or backend_default.get(resolved_backend, "fmt")
+    if verify_llvm and artifact != "llvm":
+        _fail_usage("--verify-llvm so pode ser usado quando --emit llvm.")
+
+    if artifact == "fmt":
+        if resolved_backend != "vm":
+            _fail_usage("Artefato 'fmt' disponivel apenas no backend 'vm'. Use --emit llvm ou --backend vm.")
+        result = _run_driver(source, Stage.CODEGEN)
         payload = result.formatted or ""
+    elif artifact == "ir":
+        result = _run_driver(source, Stage.IR)
+        payload = format_module_ir(result.ir) if result.ir else "{}"
+    elif artifact == "llvm":
+        result = _run_driver(source, Stage.IR)
+        if result.ir:
+            try:
+                if resolved_backend == "llvm-cpp":
+                    llvm_output = generate_llvm_cpp(result.ir, module_name=source.stem)
+                else:
+                    llvm_output = generate_llvm(result.ir, verify=False, module_name=source.stem)
+            except LLVMCPPBackendUnavailable as exc:
+                _fail_usage(str(exc))
+            except errors.CompilerError as exc:
+                _handle_compiler_error(exc, source)
+            payload = getattr(llvm_output, "text", "")
+            if verify_llvm and payload:
+                _verify_llvm_ir(payload, module_name=source.stem)
+        else:
+            payload = ""
+    elif artifact == "bytecode":
+        if resolved_backend != "bytecode":
+            _fail_usage("Artefato 'bytecode' requer --backend bytecode.")
+        result = _run_driver(source, Stage.IR)
+        if result.ir:
+            try:
+                program = compile_module(result.ir)
+            except errors.CompilerError as exc:
+                _handle_compiler_error(exc, source)
+            payload = format_bytecode(program)
+        else:
+            payload = ""
+    else:
+        raise AssertionError(f"artifacts '{artifact}' not supported")
+
     _write_payload(payload, output_path)
 
 
@@ -798,6 +1120,24 @@ def dev_ast_cmd(source: pathlib.Path) -> None:
 @click.argument("source", type=SCRIPTUM_FILE, required=True)
 def dev_ir_cmd(source: pathlib.Path) -> None:
     _ir_impl(source)
+
+
+@dev_group.command("llvm", help="Emit LLVM IR (backend textual próprio).")
+@click.argument("source", type=SCRIPTUM_FILE, required=True)
+@click.option("--verify/--no-verify", default=False, show_default=True, help="Rodar verificador do LLVM.")
+@click.option("--module-name", help="Nome do módulo LLVM (opcional).")
+def dev_llvm_cmd(source: pathlib.Path, verify: bool, module_name: str | None) -> None:
+    result = _run_driver(source, Stage.IR)
+    if result.ir is None:
+        click.echo("")
+        return
+    try:
+        output = generate_llvm(result.ir, verify=False, module_name=module_name)
+        if verify:
+            _verify_llvm_ir(output.text, module_name=module_name or source.stem)
+        click.echo(output.text)
+    except errors.CompilerError as exc:
+        _handle_compiler_error(exc, source)
 
 
 @dev_group.command("tokens", help="List supported tokens, operators, and delimiters.")

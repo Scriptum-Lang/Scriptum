@@ -11,6 +11,7 @@
         0,
         27
       ],
+      "type_info": "numerus",
       "name": "base",
       "mutable": false,
       "type_annotation": "numerus",
@@ -20,6 +21,7 @@
           24,
           26
         ],
+        "type_info": "numerus",
         "value": 10,
         "raw": "10"
       }
@@ -40,6 +42,7 @@
             49,
             56
           ],
+          "type_info": "quodlibet",
           "name": "valores",
           "type_annotation": null,
           "default_value": null
@@ -62,9 +65,11 @@
               89,
               90
             ],
+            "type_info": "numerus",
             "value": 0,
             "raw": "0"
-          }
+          },
+          "type_info": "numerus"
         },
         {
           "kind": "IrForIn",
@@ -78,6 +83,7 @@
               100,
               104
             ],
+            "type_info": "quodlibet",
             "name": "item",
             "mutable": false,
             "type_annotation": null
@@ -88,6 +94,7 @@
               108,
               115
             ],
+            "type_info": "quodlibet",
             "name": "valores"
           },
           "body": [
@@ -103,12 +110,14 @@
                   126,
                   144
                 ],
+                "type_info": "numerus",
                 "target": {
                   "kind": "IrIdentifier",
                   "span": [
                     126,
                     130
                   ],
+                  "type_info": "numerus",
                   "name": "soma"
                 },
                 "value": {
@@ -117,6 +126,7 @@
                     133,
                     144
                   ],
+                  "type_info": "numerus",
                   "operator": "ADD",
                   "left": {
                     "kind": "IrIdentifier",
@@ -124,6 +134,7 @@
                       133,
                       137
                     ],
+                    "type_info": "numerus",
                     "name": "soma"
                   },
                   "right": {
@@ -132,6 +143,7 @@
                       140,
                       144
                     ],
+                    "type_info": "quodlibet",
                     "name": "item"
                   }
                 }
@@ -154,12 +166,14 @@
               182,
               213
             ],
+            "type_info": "quodlibet",
             "object": {
               "kind": "IrObjectLiteral",
               "span": [
                 182,
                 207
               ],
+              "type_info": "{texto: textus}",
               "properties": [
                 {
                   "kind": "IrObjectProperty",
@@ -174,14 +188,17 @@
                       201,
                       205
                     ],
+                    "type_info": "textus",
                     "value": "ok",
                     "raw": "\"ok\""
                   }
                 }
               ]
             },
-            "property": "texto"
-          }
+            "property": "texto",
+            "binding": null
+          },
+          "type_info": "textus"
         },
         {
           "kind": "IrVariableDeclaration",
@@ -198,12 +215,14 @@
               248,
               260
             ],
+            "type_info": "numerus",
             "collection": {
               "kind": "IrArrayLiteral",
               "span": [
                 248,
                 257
               ],
+              "type_info": "[numerus]",
               "elements": [
                 {
                   "kind": "IrLiteral",
@@ -211,6 +230,7 @@
                     249,
                     250
                   ],
+                  "type_info": "numerus",
                   "value": 1,
                   "raw": "1"
                 },
@@ -220,6 +240,7 @@
                     252,
                     253
                   ],
+                  "type_info": "numerus",
                   "value": 2,
                   "raw": "2"
                 },
@@ -229,6 +250,7 @@
                     255,
                     256
                   ],
+                  "type_info": "numerus",
                   "value": 3,
                   "raw": "3"
                 }
@@ -240,10 +262,12 @@
                 258,
                 259
               ],
+              "type_info": "numerus",
               "value": 0,
               "raw": "0"
             }
-          }
+          },
+          "type_info": "numerus"
         },
         {
           "kind": "IrVariableDeclaration",
@@ -260,6 +284,7 @@
               295,
               322
             ],
+            "type_info": "quodlibet",
             "parameters": [
               {
                 "kind": "IrParameter",
@@ -267,6 +292,7 @@
                   304,
                   305
                 ],
+                "type_info": null,
                 "name": "x",
                 "type_annotation": null,
                 "default_value": null
@@ -279,12 +305,14 @@
                 310,
                 322
               ],
+              "type_info": null,
               "condition": {
                 "kind": "IrIdentifier",
                 "span": [
                   310,
                   311
                 ],
+                "type_info": null,
                 "name": "x"
               },
               "consequent": {
@@ -293,6 +321,7 @@
                   314,
                   315
                 ],
+                "type_info": null,
                 "name": "x"
               },
               "alternate": {
@@ -301,11 +330,13 @@
                   318,
                   322
                 ],
+                "type_info": null,
                 "name": "soma"
               }
             },
             "body_statements": []
-          }
+          },
+          "type_info": "quodlibet"
         },
         {
           "kind": "IrReturn",
@@ -319,12 +350,14 @@
               334,
               346
             ],
+            "type_info": "quodlibet",
             "callee": {
               "kind": "IrIdentifier",
               "span": [
                 334,
                 340
               ],
+              "type_info": "quodlibet",
               "name": "mapper"
             },
             "arguments": [
@@ -334,6 +367,7 @@
                   341,
                   345
                 ],
+                "type_info": "numerus",
                 "name": "soma"
               }
             ]

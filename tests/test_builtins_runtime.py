@@ -18,9 +18,9 @@ def _run_program(source: str, entry: str = "principalis") -> Any:
     normalized = textwrap.dedent(source).strip() + "\n"
     module = parser.parse(SourceFile("<test>", normalized))
     analyzer = SemanticAnalyzer()
-    diagnostics = analyzer.analyze(module)
-    assert diagnostics == []
-    ir_module = lower_module(module)
+    analysis = analyzer.analyze(module)
+    assert analysis.diagnostics == []
+    ir_module = lower_module(module, type_info=analysis.type_info, member_bindings=analysis.member_bindings)
     interpreter = Interpreter(ir_module)
     return interpreter.execute(entry).value
 

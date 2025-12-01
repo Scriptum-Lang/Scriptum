@@ -31,6 +31,28 @@ O pretty-printer cobre:
 
 O comando `scriptum fmt` usa `generate` para formatar arquivos ou STDIN, sobrescrevendo o arquivo apenas quando o conteúdo muda.
 
+## Backend LLVM (experimental)
+
+- Implementado em `scriptum.codegen.llvm` com saída textual pura (sem dependência de llvmlite). Cada valor Scriptum é rebaixado para `%scriptum.value`, um struct C descrito em `src/scriptum/runtime/runtime.h`.
+- O runtime em C (`src/scriptum/runtime/llvm_rt.c`) oferece construtores, conversões e helpers para textos, arrays, objetos, opcionais e lambdas. Use `scripts/build_runtime.sh` para produzir `build/libscriptum_rt.{a,so}` (ou `.dll` no Windows) antes de integrar com `llvm-as`/`lli`.
+- Testes rápidos:
+  - `python -m pytest tests/test_runtime_llvm.py` compila o runtime em um diretório temporário e exercita os principais helpers via `ctypes`.
+  - `python -m pytest tests/test_llvm_codegen.py` garante que o gerador emita IR contendo as chamadas corretas para o runtime (funções simples, `dum`, `pro in`, arrays, strings literais e `??`).
+- Recursos já suportados no gerador: globais/funções, controle de fluxo (`si`, `dum`, `pro in`), arrays/objetos/textos literais, operadores aritméticos/comparações, `??` e retorna das funções via `scriptum_value`.
+- `scriptum build --emit llvm --verify-llvm` e `scriptum dev llvm --verify` invocam `llvm-as` (quando disponível) para validar o IR gerado antes de exibi-lo.
+- `scriptum run --backend=llvm` utiliza o runtime em C + `lli` (quando localizados) para executar `principalis()` nativamente, serializando o resultado em JSON. Caso `lli` ou o compilador C não estejam presentes, o comando volta para a VM estrutural e alerta o usuário.
+- Builtins globais (`scribe`, `summa`, `numerus`, `textus`, etc.) agora s?o emitidos como chamadas diretas para helpers do runtime (`scriptum_rt_*`), preservando convers?es e IO id?nticos aos da VM.
+- M?todos builtin (`array.*`, `textus.*`) tamb?m s?o emitidos como chamadas diretas para `scriptum_rt_array_*`/`scriptum_rt_text_*`, preservando as mesmas muta??es e convers?es esperadas pela VM.
+- Recursos ainda pendentes nesta fase: integra??o mais profunda da CLI com `lli` para execu??o e uma su?te ampliada de regress?es (snapshots) em `tests/backend_llvm/`.
+
+### Requisitos de ferramentas
+
+- **Compilador C** (`cc`, `clang` ou `gcc`): usado para gerar `libscriptum_rt` on-demand. Defina a variável `CC` se precisar de um binário customizado.
+- **Ferramentas LLVM**:
+  - `llvm-as` (ou `LLVM_AS=/caminho/para/llvm-as`) para `--verify-llvm`.
+  - `lli` (ou `LLI=/caminho/para/lli`) para executar `scriptum run --backend=llvm`/`SCRIPTUM_BACKEND=llvm`.
+- Ausências são tratadas com mensagens informativas e fallback automático para a VM.
+
 ## Execução (mini VM)
 
 O módulo `scriptum.ir.interpreter` implementa uma VM estrutural:
@@ -41,8 +63,3 @@ O módulo `scriptum.ir.interpreter` implementa uma VM estrutural:
 
 O comando `scriptum run` utiliza esse interpretador após passar por lex/parse/sema/IR, retornando o valor de `principalis()` (ou `nullum` caso não haja retorno explícito).
 
-## Próximos passos
-
-- Backend de bytecode reaproveitando o IR.
-- Otimizador (propagação constante, folding de `??`).
-- Interface modular para futuros targets (LLVM, WASM).
