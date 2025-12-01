@@ -47,6 +47,7 @@ try:
     from .ir.interpreter import ExecutionResult, Interpreter
     from .lexer.lexer import LexerConfig, ScriptumLexer
     from .parser.parser import ScriptumParser
+    from .optimizations import LocalOptimizer
     from .sema.analyzer import SemanticAnalyzer, SemanticDiagnostic
 except ImportError:  # pragma: no cover - standalone PyInstaller execution
     errors = importlib.import_module("scriptum.errors")
@@ -70,6 +71,9 @@ except ImportError:  # pragma: no cover - standalone PyInstaller execution
 
     parser_module = importlib.import_module("scriptum.parser.parser")
     ScriptumParser = parser_module.ScriptumParser
+
+    optimizations_module = importlib.import_module("scriptum.optimizations")
+    LocalOptimizer = optimizations_module.LocalOptimizer
 
     sema_module = importlib.import_module("scriptum.sema.analyzer")
     SemanticAnalyzer = sema_module.SemanticAnalyzer
@@ -96,6 +100,7 @@ class DriverConfig:
     """Configuration options for the compilation pipeline."""
 
     until: Stage = Stage.CODEGEN
+    enable_local_optimizer: bool = True
 
 
 class CompilerDriver:
@@ -105,6 +110,7 @@ class CompilerDriver:
         self.config = config or DriverConfig()
         self._lexer = ScriptumLexer(LexerConfig())
         self._parser = ScriptumParser()
+        self._optimizer = LocalOptimizer()
 
     @dataclass(slots=True)
     class Result:
@@ -143,14 +149,22 @@ class CompilerDriver:
         if target_stage == Stage.PARSER:
             return result
 
-        diagnostics = self.analyze(result.ast)
+        analysis = self.analyze(result.ast)
+        diagnostics = analysis.diagnostics
         result.diagnostics = diagnostics
         if target_stage == Stage.SEMANTIC:
             return result
         if diagnostics:
             raise errors.SemanticError(diagnostics)
 
-        result.ir = lower_module(result.ast)
+        ir_module = lower_module(
+            result.ast,
+            type_info=analysis.type_info,
+            member_bindings=analysis.member_bindings,
+        )
+        if self.config.enable_local_optimizer and ir_module is not None:
+            ir_module = self._optimizer.optimize(ir_module)
+        result.ir = ir_module
         if target_stage == Stage.IR:
             return result
 

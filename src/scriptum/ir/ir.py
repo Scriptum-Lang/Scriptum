@@ -3,15 +3,24 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, fields
-from typing import Any, List, Optional
+from dataclasses import dataclass, field, fields
+from typing import Any, List, Optional, TYPE_CHECKING
 
 from ..text import Span
+
+if TYPE_CHECKING:  # pragma: no cover - typing helpers
+    from ..sema.types import Type
+    from ..builtins import MethodBinding
 
 
 @dataclass(slots=True)
 class IrNode:
     span: Span
+
+
+@dataclass(slots=True)
+class IrTypedNode(IrNode):
+    type_info: Optional["Type"] = field(default=None, kw_only=True)
 
 
 @dataclass(slots=True)
@@ -25,7 +34,7 @@ IrModule = ModuleIr
 
 
 @dataclass(slots=True)
-class IrVariable(IrNode):
+class IrVariable(IrTypedNode):
     name: str
     mutable: bool
     type_annotation: Optional[str]
@@ -33,7 +42,7 @@ class IrVariable(IrNode):
 
 
 @dataclass(slots=True)
-class IrParameter(IrNode):
+class IrParameter(IrTypedNode):
     name: str
     type_annotation: Optional[str]
     default_value: Optional["IrExpr"]
@@ -63,6 +72,7 @@ class IrVariableDeclaration(IrStatement):
     mutable: bool
     type_annotation: Optional[str]
     initializer: Optional["IrExpr"]
+    type_info: Optional["Type"] = field(default=None, kw_only=True)
 
 
 @dataclass(slots=True)
@@ -79,7 +89,7 @@ class IrWhile(IrStatement):
 
 
 @dataclass(slots=True)
-class IrForTarget(IrNode):
+class IrForTarget(IrTypedNode):
     name: str
     mutable: bool
     type_annotation: Optional[str]
@@ -108,7 +118,7 @@ class IrContinue(IrStatement):
 
 
 @dataclass(slots=True)
-class IrExpr(IrNode):
+class IrExpr(IrTypedNode):
     pass
 
 
@@ -159,6 +169,7 @@ class IrCall(IrExpr):
 class IrMemberAccess(IrExpr):
     object: IrExpr
     property: str
+    binding: Optional["MethodBinding"] = None
 
 
 @dataclass(slots=True)

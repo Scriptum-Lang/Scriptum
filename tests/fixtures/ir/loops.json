@@ -11,6 +11,7 @@
         0,
         31
       ],
+      "type_info": "numerus",
       "name": "contador",
       "mutable": true,
       "type_annotation": "numerus",
@@ -20,6 +21,7 @@
           29,
           30
         ],
+        "type_info": "numerus",
         "value": 0,
         "raw": "0"
       }
@@ -40,6 +42,7 @@
             51,
             58
           ],
+          "type_info": "numerus",
           "name": "limite",
           "type_annotation": "numerus",
           "default_value": null
@@ -62,9 +65,11 @@
               110,
               111
             ],
+            "type_info": "numerus",
             "value": 0,
             "raw": "0"
-          }
+          },
+          "type_info": "numerus"
         },
         {
           "kind": "IrWhile",
@@ -78,6 +83,7 @@
               121,
               137
             ],
+            "type_info": "booleanum",
             "operator": "LT",
             "left": {
               "kind": "IrIdentifier",
@@ -85,6 +91,7 @@
                 122,
                 127
               ],
+              "type_info": "numerus",
               "name": "total"
             },
             "right": {
@@ -93,6 +100,7 @@
                 130,
                 136
               ],
+              "type_info": "numerus",
               "name": "limite"
             }
           },
@@ -109,12 +117,14 @@
                   148,
                   165
                 ],
+                "type_info": "numerus",
                 "target": {
                   "kind": "IrIdentifier",
                   "span": [
                     148,
                     153
                   ],
+                  "type_info": "numerus",
                   "name": "total"
                 },
                 "value": {
@@ -123,6 +133,7 @@
                     156,
                     165
                   ],
+                  "type_info": "numerus",
                   "operator": "ADD",
                   "left": {
                     "kind": "IrIdentifier",
@@ -130,6 +141,7 @@
                       156,
                       161
                     ],
+                    "type_info": "numerus",
                     "name": "total"
                   },
                   "right": {
@@ -138,6 +150,7 @@
                       164,
                       165
                     ],
+                    "type_info": "numerus",
                     "value": 1,
                     "raw": "1"
                   }
@@ -156,6 +169,7 @@
                   178,
                   195
                 ],
+                "type_info": "booleanum",
                 "operator": "EQ",
                 "left": {
                   "kind": "IrIdentifier",
@@ -163,6 +177,7 @@
                     179,
                     184
                   ],
+                  "type_info": "numerus",
                   "name": "total"
                 },
                 "right": {
@@ -171,6 +186,7 @@
                     188,
                     194
                   ],
+                  "type_info": "numerus",
                   "name": "limite"
                 }
               },
@@ -207,6 +223,7 @@
               282,
               292
             ],
+            "type_info": "numerus",
             "operator": "NULLISH",
             "left": {
               "kind": "IrIdentifier",
@@ -214,6 +231,7 @@
                 282,
                 287
               ],
+              "type_info": "numerus",
               "name": "total"
             },
             "right": {
@@ -222,6 +240,7 @@
                 291,
                 292
               ],
+              "type_info": "numerus",
               "value": 0,
               "raw": "0"
             }

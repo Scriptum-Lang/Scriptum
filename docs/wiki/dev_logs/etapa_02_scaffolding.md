@@ -26,4 +26,3 @@
   ```bash
   scriptum --help
   ```
-- Próximas etapas adicionarão implementações reais para cada módulo e testes automatizados sobre `examples/`.

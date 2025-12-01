@@ -1,0 +1,9 @@
+structura Persona {
+    textus nomem;
+    numerus aetas;
+}
+
+functio principalis() -> numerus {
+    mutabilis Persona p = Persona { nomem: "alice", aetas: 30 };
+    redde p.aetas;
+}

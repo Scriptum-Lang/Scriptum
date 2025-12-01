@@ -1,0 +1,10 @@
+functio principalis() -> numerus {
+    mutabilis numerus total = 0;
+    mutabilis collection = [1, 2, 3];
+
+    pro (mutabilis numerus valor in collection) {
+        total = total + valor;
+    }
+
+    redde total;
+}

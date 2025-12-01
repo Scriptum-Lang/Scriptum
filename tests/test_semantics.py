@@ -16,8 +16,8 @@ def _analyze(relative: str):
     parser = ScriptumParser()
     module = parser.parse(SourceFile(str(path), path.read_text(encoding="utf8")))
     analyzer = SemanticAnalyzer()
-    diagnostics = analyzer.analyze(module)
-    return diagnostics
+    result = analyzer.analyze(module)
+    return result.diagnostics
 
 
 @pytest.mark.parametrize(
@@ -43,7 +43,7 @@ def _analyze_snippet(source: str):
     parser = ScriptumParser()
     module = parser.parse(SourceFile("<test>", source))
     analyzer = SemanticAnalyzer()
-    return analyzer.analyze(module)
+    return analyzer.analyze(module).diagnostics
 
 
 def test_use_before_declaration_reports_s100() -> None:

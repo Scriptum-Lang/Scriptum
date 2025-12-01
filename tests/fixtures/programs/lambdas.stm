@@ -1,0 +1,7 @@
+functio principalis() -> numerus {
+    mutabilis numerus base = 5;
+    mutabilis numerus offset = 2;
+    mutabilis quodlibet mapper = functio (x) => x + base;
+    base = base + offset;
+    redde mapper(3);
+}
